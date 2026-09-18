@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TicketVerse — MCGI Chapel</title>
+<meta name="description" content="Reserve a free seat at MCGI Chapel. Pick your seat, get a QR code, walk straight in.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Tokens
+   ============================================================ */
+:root{
+  --blue:#2440DB;
+  --blue-deep:#16268A;
+  --purple:#7A2FF2;
+  --ink:#10133A;
+  --ink-soft:#585E8C;
+  --ink-faint:#8A90B8;
+  --paper:#F4F5FC;
+  --surface:#FFFFFF;
+  --surface-2:#FBFBFF;
+  --line:#E3E5F3;
+  --line-strong:#CDD1E8;
+
+  --seat-free:#CBD4FB;
+  --seat-free-edge:#A3B2F6;
+  --seat-taken:#DCDEEA;
+  --seat-taken-edge:#CBCEDE;
+  --seat-block:#EDEEF4;
+  --seat-block-edge:#D5D7E4;
+  --seat-mine:#7A2FF2;
+
+  --mosaic-free:#B9C4F9;
+  --mosaic-taken:#DEE0EC;
+  --mosaic-block:#EFF0F5;
+  --mosaic-mine:#7A2FF2;
+
+  --shadow-lift:0 1px 2px rgba(16,19,58,.06), 0 8px 24px -12px rgba(16,19,58,.22);
+  --shadow-pop:0 24px 70px -28px rgba(16,19,58,.45);
+
+  --radius:14px;
+  --seat:11px;
+  --maxw:1160px;
+  --gutter:clamp(20px,4.4vw,46px);
+  --band:clamp(38px,5.4vw,66px);
+  --ff:'Montserrat', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --blue:#7B90FF;
+    --blue-deep:#A9B6FF;
+    --purple:#B37BFF;
+    --ink:#E8EAFF;
+    --ink-soft:#A5AAD4;
+    --ink-faint:#7A80AE;
+    --paper:#080A1C;
+    --surface:#11142F;
+    --surface-2:#161A3A;
+    --line:#252A53;
+    --line-strong:#333A68;
+
+    --seat-free:#2C3573;
+    --seat-free-edge:#414C99;
+    --seat-taken:#1B1F42;
+    --seat-taken-edge:#262B54;
+    --seat-block:#151833;
+    --seat-block-edge:#1F2346;
+    --seat-mine:#B37BFF;
+
+    --mosaic-free:#3A4693;
+    --mosaic-taken:#1E2349;
+    --mosaic-block:#171B39;
+    --mosaic-mine:#B37BFF;
+
+    --shadow-lift:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    --shadow-pop:0 30px 80px -30px rgba(0,0,0,.85);
+  }
+}
+:root[data-theme="dark"]{
+  --blue:#7B90FF; --blue-deep:#A9B6FF; --purple:#B37BFF;
+  --ink:#E8EAFF; --ink-soft:#A5AAD4; --ink-faint:#7A80AE;
+  --paper:#080A1C; --surface:#11142F; --surface-2:#161A3A;
+  --line:#252A53; --line-strong:#333A68;
+  --seat-free:#2C3573; --seat-free-edge:#414C99;
+  --seat-taken:#1B1F42; --seat-taken-edge:#262B54;
+  --seat-block:#151833; --seat-block-edge:#1F2346;
+  --seat-mine:#B37BFF;
+  --mosaic-free:#3A4693; --mosaic-taken:#1E2349; --mosaic-block:#171B39; --mosaic-mine:#B37BFF;
+  --shadow-lift:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  --shadow-pop:0 30px 80px -30px rgba(0,0,0,.85);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--ff);font-weight:400;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img,canvas,svg{max-width:100%}
+h1,h2,h3,h4{margin:0;font-weight:600;line-height:1.14;letter-spacing:-.021em}
+h1{font-size:clamp(2.1rem,5.2vw,3.5rem);font-weight:700;letter-spacing:-.033em}
+h2{font-size:clamp(1.5rem,3vw,2.1rem)}
+h3{font-size:1.06rem}
+p{margin:0}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--purple);outline-offset:2px;border-radius:4px}
+.wrap{
+  max-width:calc(var(--maxw) + var(--gutter) * 2);margin:0 auto;
+  padding-left:calc(var(--gutter) + env(safe-area-inset-left));
+  padding-right:calc(var(--gutter) + env(safe-area-inset-right));
+}
+.muted{color:var(--ink-soft)}
+.tnum{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ============================================================
+   Header
+   ============================================================ */
+header{
+  position:sticky;top:0;z-index:60;
+  background:var(--paper);
+  background:color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter:saturate(1.4) blur(14px);
+  border-bottom:1px solid var(--line);
+}
+header{transition:box-shadow .3s ease}
+header.scrolled{box-shadow:0 12px 34px -26px rgba(16,19,58,.7)}
+.bar{display:flex;align-items:center;gap:18px;height:clamp(58px,7vw,68px);transition:height .25s ease}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex:0 0 auto}
+.brand svg{width:34px;height:34px;display:block}
+.brand b{font-weight:700;font-size:1.06rem;letter-spacing:-.03em}
+.brand b span{color:var(--purple)}
+.brand small{display:block;font-size:.58rem;font-weight:500;letter-spacing:.14em;color:var(--ink-faint);margin-top:-2px}
+nav.main{display:flex;gap:2px;margin-left:auto}
+nav.main a{
+  text-decoration:none;font-size:.86rem;font-weight:500;color:var(--ink-soft);
+  padding:8px 13px;border-radius:9px;white-space:nowrap;
+}
+nav.main a:hover{color:var(--ink);background:var(--surface)}
+nav.main a.on{color:var(--ink);background:var(--surface);box-shadow:var(--shadow-lift)}
+.whoami{
+  display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-size:.8rem;font-weight:500;
+  max-width:190px;
+}
+.whoami .dot{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:#fff;display:grid;place-items:center;font-size:.66rem;font-weight:700;flex:0 0 auto}
+.whoami span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menu-btn{display:none;margin-left:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:8px 11px;cursor:pointer;font-size:.8rem;font-weight:600}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero{padding-top:clamp(34px,6.2vw,72px);padding-bottom:clamp(26px,4vw,46px);position:relative}
+.hero::before{
+  content:"";position:absolute;z-index:0;inset:-6% -18% auto -18%;height:min(460px,70vh);pointer-events:none;
+  background:
+    radial-gradient(44% 62% at 16% 28%, color-mix(in srgb, var(--blue) 17%, transparent), transparent 70%),
+    radial-gradient(40% 58% at 84% 16%, color-mix(in srgb, var(--purple) 16%, transparent), transparent 72%);
+  animation:aurora 16s ease-in-out infinite alternate;
+}
+.hero-grid{position:relative;z-index:1;display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,.86fr);gap:clamp(30px,4.4vw,56px);align-items:center}
+.hero h1{max-width:12ch}
+.hero .lede{margin-top:20px;font-size:1.06rem;color:var(--ink-soft);max-width:44ch;line-height:1.62}
+.free-line{
+  display:inline-flex;align-items:baseline;gap:10px;margin-top:26px;
+  border-left:3px solid var(--purple);padding-left:14px;
+}
+.free-line b{font-size:1.5rem;font-weight:700;letter-spacing:-.03em;
+  background:linear-gradient(96deg,var(--blue),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.free-line i{font-style:normal;font-size:.84rem;color:var(--ink-soft)}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{
+  border:0;border-radius:11px;padding:13px 21px;font-size:.92rem;font-weight:600;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+  transition:transform .12s ease, box-shadow .16s ease, background .16s ease;
+}
+.btn-primary{background:linear-gradient(96deg,var(--blue),var(--purple));color:#fff;
+  box-shadow:0 10px 26px -12px rgba(122,47,242,.75)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 16px 34px -14px rgba(122,47,242,.8)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-quiet{background:transparent;border:1px solid var(--line-strong);color:var(--ink-soft);
+  padding:9px 15px;font-size:.82rem;border-radius:9px}
+.btn-quiet:hover{color:var(--ink);border-color:var(--ink-faint)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+.mosaic-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px 20px 16px;
+  box-shadow:var(--shadow-lift);
+}
+.mosaic-card h3{font-size:.92rem;font-weight:600}
+.mosaic-card .sub{font-size:.76rem;color:var(--ink-faint);margin-top:2px}
+#mosaic{display:block;width:100%;height:auto;margin:14px 0 12px;cursor:pointer}
+.mosaic-key{display:flex;flex-wrap:wrap;gap:14px;font-size:.73rem;color:var(--ink-soft)}
+.mosaic-key i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px}
+
+/* ============================================================
+   Sections
+   ============================================================ */
+section{scroll-margin-top:80px}
+.band{padding:var(--band) 0}
+.band-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:26px}
+.band-head p{color:var(--ink-soft);font-size:.94rem;max-width:56ch;margin-top:8px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-lift)}
+
+/* Service picker */
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:22px}
+.svc{
+  text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;cursor:pointer;transition:border-color .15s ease, background .15s ease;
+}
+.svc:hover{border-color:var(--line-strong)}
+.svc.on{border-color:var(--purple);background:
+  linear-gradient(var(--surface),var(--surface)) padding-box,
+  linear-gradient(96deg,var(--blue),var(--purple)) border-box;
+  border:1.5px solid transparent;box-shadow:0 10px 26px -18px rgba(122,47,242,.9)}
+.svc b{display:block;font-weight:600;font-size:.93rem}
+.svc small{display:block;color:var(--ink-soft);font-size:.78rem;margin-top:3px}
+.svc .avail{display:block;margin-top:9px;font-size:.76rem;font-weight:600;color:var(--blue)}
+
+/* Deck toolbar */
+.deck-top{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+  padding:clamp(12px,2.1vw,18px) clamp(13px,2.3vw,20px);border-bottom:1px solid var(--line)}
+.levels{display:flex;gap:4px;background:var(--paper);padding:4px;border-radius:12px;flex-wrap:wrap}
+.levels button{
+  background:transparent;border:0;border-radius:9px;padding:8px 14px;font-size:.83rem;font-weight:500;
+  color:var(--ink-soft);cursor:pointer;white-space:nowrap
+}
+.levels button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:var(--shadow-lift)}
+.deck-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.zoom{display:flex;align-items:center;gap:2px;background:var(--paper);border-radius:10px;padding:3px}
+.zoom button{width:30px;height:30px;border:0;background:transparent;border-radius:8px;cursor:pointer;
+  font-size:1rem;font-weight:600;color:var(--ink-soft)}
+.zoom button:hover{background:var(--surface);color:var(--ink)}
+.autopick{display:flex;align-items:center;gap:6px}
+.autopick input{width:52px;padding:8px 8px;border-radius:9px;border:1px solid var(--line-strong);
+  background:var(--surface);text-align:center;font-weight:600;font-size:.84rem}
+
+/* Stage + deck */
+.deck-scroll{overflow-x:auto;padding:clamp(18px,3vw,30px) clamp(12px,2.4vw,22px) clamp(16px,2.6vw,26px);
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.stage{
+  margin:0 auto 26px;width:min(560px,100%);height:46px;
+  border-radius:0 0 200px 200px / 0 0 46px 46px;
+  background:linear-gradient(180deg, color-mix(in srgb, var(--blue) 16%, transparent), transparent);
+  border-bottom:2px solid var(--line-strong);
+  display:grid;place-items:center;color:var(--ink-soft);font-size:.74rem;font-weight:600;letter-spacing:.18em;
+}
+.deck-inner{width:max-content;min-width:100%;margin:0 auto}
+.deck{display:flex;justify-content:center;align-items:flex-start;gap:0}
+.rowlab{display:grid;gap:3px;padding-top:26px}
+.rowlab span{height:var(--seat);line-height:var(--seat);font-size:9px;color:var(--ink-faint);
+  width:20px;text-align:center;font-weight:600}
+.sect{padding:0 14px}
+.sect > b{display:block;text-align:center;font-size:.7rem;font-weight:600;color:var(--ink-faint);
+  height:26px;line-height:22px;letter-spacing:.04em}
+.grid{display:grid;gap:3px}
+.seat{
+  width:var(--seat);height:var(--seat);padding:0;border-radius:3px;cursor:pointer;
+  background:var(--seat-free);border:1px solid var(--seat-free-edge);
+  transition:transform .09s ease, background .12s ease;
+}
+.seat:hover:not(.taken):not(.blocked){transform:scale(1.35);z-index:2;position:relative;
+  background:var(--blue);border-color:var(--blue)}
+.seat.taken{background:var(--seat-taken);border-color:var(--seat-taken-edge);cursor:not-allowed}
+.seat.blocked{background:var(--seat-block);border-color:var(--seat-block-edge);cursor:not-allowed;opacity:.75}
+.seat.mine{background:var(--seat-mine);border-color:var(--seat-mine);cursor:not-allowed}
+.seat.sel{background:linear-gradient(135deg,var(--blue),var(--purple));border-color:transparent;
+  transform:scale(1.25);z-index:3;position:relative;box-shadow:0 0 0 2px color-mix(in srgb,var(--purple) 35%,transparent)}
+.seat.gap{visibility:hidden;pointer-events:none}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px 16px;padding:clamp(12px,2vw,16px) clamp(13px,2.3vw,20px);
+  border-top:1px solid var(--line);
+  font-size:.78rem;color:var(--ink-soft)}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:7px;vertical-align:-1px;
+  border:1px solid transparent}
+
+/* Selection tray */
+.tray{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;
+  transform:translateY(112%);transition:transform .22s cubic-bezier(.3,.8,.4,1);
+  background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -20px 50px -30px rgba(16,19,58,.5);
+  padding:13px 0 calc(13px + env(safe-area-inset-bottom));
+}
+.tray.up{transform:translateY(0)}
+.tray-in{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 220px;min-width:0}
+.chip{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:4px 9px;
+  font-size:.76rem;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.chip button{border:0;background:transparent;cursor:pointer;color:var(--ink-faint);font-size:.9rem;line-height:1;padding:0}
+.tray .total{font-size:.82rem;color:var(--ink-soft)}
+.tray .total b{display:block;font-size:1.1rem;color:var(--ink);font-weight:700}
+
+/* ============================================================
+   Dashboard
+   ============================================================ */
+.ledger{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:1px;
+  border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--line);
+  box-shadow:var(--shadow-lift)}
+.ledger div{padding:clamp(17px,2.4vw,24px) clamp(15px,2vw,22px);background:var(--surface)}
+.ledger b{display:block;font-size:clamp(1.7rem,3.4vw,2.35rem);font-weight:700;letter-spacing:-.04em;line-height:1}
+.ledger small{display:block;margin-top:8px;font-size:.79rem;color:var(--ink-soft);font-weight:500}
+.ledger .n-avail b{color:var(--blue)}
+.ledger .n-res b{color:var(--purple)}
+
+.capbar{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:clamp(18px,2.6vw,26px);
+  box-shadow:var(--shadow-lift)}
+.capbar h3{font-size:.92rem}
+.capacity{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:16px 0 12px;background:var(--paper)}
+.capacity span{display:block;transition:width .4s cubic-bezier(.3,.8,.4,1)}
+.capacity .s-avail{background:linear-gradient(90deg,var(--blue),var(--purple))}
+.capacity .s-res{background:var(--purple);opacity:.8}
+.capacity .s-block{background:var(--line-strong)}
+.bar-key{display:flex;flex-wrap:wrap;gap:18px;font-size:.78rem;color:var(--ink-soft)}
+.bar-key i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px}
+
+table.levels-tbl{width:100%;border-collapse:collapse;margin-top:22px;font-size:.86rem}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl-scroll table.levels-tbl{min-width:460px}
+table.levels-tbl th{text-align:right;font-weight:600;color:var(--ink-faint);font-size:.74rem;
+  padding:0 12px 10px;border-bottom:1px solid var(--line)}
+table.levels-tbl th:first-child{text-align:left}
+table.levels-tbl td{padding:12px;border-bottom:1px solid var(--line);text-align:right}
+table.levels-tbl td:first-child{text-align:left;font-weight:600}
+table.levels-tbl tr:last-child td{border-bottom:0}
+table.levels-tbl .mini{display:block;font-size:.72rem;color:var(--ink-faint);font-weight:400}
+
+/* ============================================================
+   Tickets
+   ============================================================ */
+.tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+.tk{
+  background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  box-shadow:var(--shadow-lift);display:flex;flex-direction:column;
+}
+.tk-top{padding:16px 18px;background:linear-gradient(96deg,var(--blue),var(--purple));color:#fff}
+.tk-top b{display:block;font-size:.98rem;font-weight:600}
+.tk-top small{display:block;opacity:.86;font-size:.76rem;margin-top:2px}
+.tk-body{padding:16px 18px;display:grid;gap:11px;flex:1}
+.tk-row{display:flex;justify-content:space-between;gap:14px;font-size:.82rem}
+.tk-row span{color:var(--ink-soft)}
+.tk-row b{font-weight:600;text-align:right}
+.tk-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;font-size:.86rem}
+.tk-foot{display:flex;gap:8px;padding:0 18px 16px}
+.tk-foot .btn{flex:1;justify-content:center;padding:10px 14px;font-size:.83rem}
+.empty{
+  border:1.5px dashed var(--line-strong);border-radius:18px;padding:44px 26px;text-align:center;
+  color:var(--ink-soft);background:var(--surface-2)
+}
+.empty b{display:block;color:var(--ink);font-weight:600;margin-bottom:6px;font-size:1rem}
+
+/* ============================================================
+   Subscription
+   ============================================================ */
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:16px}
+.tier{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px;
+  display:flex;flex-direction:column;box-shadow:var(--shadow-lift)}
+.tier.feature{border:1.5px solid transparent;
+  background:linear-gradient(var(--surface),var(--surface)) padding-box,
+             linear-gradient(140deg,var(--blue),var(--purple)) border-box;
+  box-shadow:0 26px 60px -34px rgba(122,47,242,.85)}
+.tier h3{font-size:1rem}
+.tier .price{margin:14px 0 4px;font-size:2rem;font-weight:700;letter-spacing:-.04em}
+.tier .price small{font-size:.8rem;font-weight:500;color:var(--ink-soft);letter-spacing:0}
+.tier .cap{font-size:.8rem;color:var(--ink-soft);padding-bottom:16px;border-bottom:1px solid var(--line)}
+.tier ul{list-style:none;padding:0;margin:16px 0 22px;display:grid;gap:9px;font-size:.85rem;flex:1}
+.tier li{display:flex;gap:10px;align-items:flex-start;color:var(--ink-soft)}
+.tier li svg{flex:0 0 auto;margin-top:4px}
+.tier .btn{justify-content:center;width:100%}
+.tier.owned{outline:2px solid var(--purple);outline-offset:-2px}
+
+.builder{margin-top:20px;padding:clamp(18px,2.8vw,26px);display:grid;gap:18px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:14px}
+label.f{display:block;font-size:.78rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px}
+.inp{width:100%;padding:11px 13px;border-radius:11px;border:1px solid var(--line-strong);
+  background:var(--surface-2);font-size:.9rem}
+.inp:focus{outline:none;border-color:var(--purple);background:var(--surface)}
+.plan-preview{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:18px;
+  overflow-x:auto}
+.plan-preview .grid{justify-content:center}
+.plan-preview .seat{cursor:default;background:var(--seat-free);border-color:var(--seat-free-edge)}
+.plan-preview .seat:hover{transform:none;background:var(--seat-free);border-color:var(--seat-free-edge)}
+.locked{text-align:center;padding:34px 22px;color:var(--ink-soft);font-size:.9rem}
+
+/* ============================================================
+   Modals
+   ============================================================ */
+.scrim{
+  position:fixed;inset:0;z-index:100;background:rgba(10,12,34,.55);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;overflow-y:auto;
+  padding:clamp(14px,3.4vw,30px);
+  padding-bottom:calc(clamp(14px,3.4vw,30px) + env(safe-area-inset-bottom));
+}
+.scrim.open{display:flex;animation:scrim-in .2s ease both}
+.modal{
+  background:var(--surface);border-radius:20px;width:100%;max-width:440px;box-shadow:var(--shadow-pop);
+  border:1px solid var(--line);overflow:hidden;margin:auto;
+  display:flex;flex-direction:column;
+  max-height:calc(100vh - 30px);max-height:calc(100dvh - 30px);
+  animation:modal-in .32s cubic-bezier(.2,.85,.3,1) both;
+}
+.m-head,.m-foot{flex:0 0 auto}
+.modal.wide{max-width:520px}
+.m-head{padding:22px clamp(18px,3.5vw,24px) 0;display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.m-head h3{font-size:1.15rem;letter-spacing:-.02em}
+.m-head p{font-size:.84rem;color:var(--ink-soft);margin-top:5px}
+.x{border:0;background:var(--paper);border-radius:9px;width:32px;height:32px;cursor:pointer;
+  font-size:1.05rem;color:var(--ink-soft);flex:0 0 auto}
+.x:hover{color:var(--ink)}
+.m-body{padding:20px clamp(18px,3.5vw,24px);display:grid;gap:16px;align-content:start;
+  flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain}
+.m-foot{padding:16px clamp(18px,3.5vw,24px) 24px;display:flex;gap:10px;flex-wrap:wrap}
+.m-foot .btn{flex:1;justify-content:center}
+.summary{background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:14px 16px;display:grid;gap:9px}
+.summary div{display:flex;justify-content:space-between;gap:14px;font-size:.84rem}
+.summary div span{color:var(--ink-soft)}
+.summary div b{font-weight:600;text-align:right}
+.summary .grand{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.summary .grand b{font-size:1.05rem;background:linear-gradient(96deg,var(--blue),var(--purple));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.note{font-size:.75rem;color:var(--ink-faint);line-height:1.5}
+.err{font-size:.8rem;color:#C62828;font-weight:500}
+:root[data-theme="dark"] .err, :root:not([data-theme="light"]) .err{color:#FF9B9B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .err{color:#FF9B9B}}
+
+/* Ticket modal */
+.stub{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface-2)}
+.stub-top{background:linear-gradient(96deg,var(--blue),var(--purple));color:#fff;padding:18px 20px}
+.stub-top b{font-size:1.02rem;font-weight:600;display:block}
+.stub-top small{opacity:.88;font-size:.78rem}
+.perf{height:18px;background:
+  radial-gradient(circle at 9px 9px, var(--paper) 9px, transparent 9.5px) left/50% 100% no-repeat,
+  radial-gradient(circle at calc(100% - 9px) 9px, var(--paper) 9px, transparent 9.5px) right/50% 100% no-repeat;
+  border-bottom:1.5px dashed var(--line-strong)}
+.stub-mid{padding:18px 20px;display:grid;gap:10px}
+.qr-box{display:grid;place-items:center;padding:18px;background:#fff;border-radius:14px;margin:0 20px 20px}
+.qr-box canvas,.qr-box img{display:block;image-rendering:pixelated}
+.qr-fallback{font-family:ui-monospace,Menlo,monospace;font-size:.78rem;color:#333;text-align:center;
+  padding:22px;line-height:1.6}
+
+/* Pay method */
+.pays{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pay{border:1px solid var(--line-strong);border-radius:13px;padding:14px;cursor:pointer;background:var(--surface-2);
+  text-align:left;font-size:.86rem;font-weight:600;transition:border-color .15s ease}
+.pay small{display:block;font-weight:400;font-size:.74rem;color:var(--ink-soft);margin-top:3px}
+.pay.on{border-color:var(--purple);background:color-mix(in srgb,var(--purple) 7%, var(--surface))}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translate(-50%,140%);z-index:200;
+  background:var(--ink);color:var(--paper);padding:13px 20px;border-radius:12px;font-size:.87rem;font-weight:500;
+  box-shadow:var(--shadow-pop);transition:transform .26s cubic-bezier(.3,.9,.4,1);max-width:90vw;text-align:center;
+}
+.toast.up{transform:translate(-50%,0)}
+
+/* Footer */
+footer{border-top:1px solid var(--line);margin-top:30px;color:var(--ink-soft);font-size:.83rem;
+  padding:clamp(28px,4vw,40px) 0 calc(clamp(34px,5vw,52px) + env(safe-area-inset-bottom))}
+.foot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:26px 34px;align-items:start}
+footer b{color:var(--ink);font-weight:600}
+.foot-note{max-width:52ch;line-height:1.65;font-size:.78rem;color:var(--ink-faint);margin-top:12px}
+
+/* ============================================================
+   Motion
+   ============================================================ */
+@keyframes fade-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fade-down{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes sect-in{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pop-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes modal-in{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes scrim-in{from{opacity:0}to{opacity:1}}
+@keyframes seat-pick{0%{transform:scale(1)}55%{transform:scale(1.55)}100%{transform:scale(1.25)}}
+@keyframes aurora{
+  from{transform:translate3d(0,0,0) scale(1);opacity:.75}
+  to{transform:translate3d(0,-18px,0) scale(1.07);opacity:1}
+}
+@keyframes sheen{from{background-position:0% 50%}to{background-position:220% 50%}}
+@keyframes live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.72)}}
+
+/* hero arrives in sequence */
+.hero h1{animation:fade-up .72s cubic-bezier(.2,.8,.3,1) .04s both}
+.hero .lede{animation:fade-up .72s cubic-bezier(.2,.8,.3,1) .14s both}
+.free-line{animation:fade-up .72s cubic-bezier(.2,.8,.3,1) .24s both}
+.cta-row{animation:fade-up .72s cubic-bezier(.2,.8,.3,1) .32s both}
+.mosaic-card{animation:fade-up .8s cubic-bezier(.2,.8,.3,1) .2s both}
+.free-line b{
+  background:linear-gradient(96deg,var(--blue),var(--purple),var(--blue));
+  background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:sheen 7s linear infinite;
+}
+
+/* everything below the fold slides in as you reach it */
+.reveal{opacity:0;transform:translateY(24px);
+  transition:opacity .62s ease, transform .62s cubic-bezier(.2,.8,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* seat map */
+.sect{animation:sect-in .5s cubic-bezier(.2,.8,.3,1) both}
+.seat.sel{animation:seat-pick .26s cubic-bezier(.3,.9,.4,1)}
+.svc{transition:transform .2s ease, border-color .15s ease, background .15s ease, box-shadow .22s ease}
+.svc:hover{transform:translateY(-2px)}
+.svc.on .avail::before{
+  content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);
+  margin-right:7px;vertical-align:1px;animation:live-pulse 2.4s ease-in-out infinite;
+}
+.btn:active{transform:translateY(1px) scale(.985)}
+.tier{transition:transform .24s cubic-bezier(.2,.8,.3,1), box-shadow .24s ease}
+.tier:hover{transform:translateY(-4px)}
+.tk{animation:fade-up .45s cubic-bezier(.2,.8,.3,1) both;
+  transition:box-shadow .22s ease, border-color .22s ease}
+.tk:hover{box-shadow:0 22px 46px -26px rgba(16,19,58,.55);border-color:var(--line-strong)}
+.scrim.open .qr-box{animation:pop-in .45s cubic-bezier(.2,.9,.3,1) .12s both}
+.levels button{transition:background .2s ease, color .2s ease}
+.menu-btn{transition:background .2s ease, border-color .2s ease}
+
+/* ============================================================
+   Responsive — phone, tablet and desktop, portrait and landscape
+   ============================================================ */
+
+/* stack the hero once the two columns stop earning their keep */
+@media (max-width:1000px){
+  .hero-grid{grid-template-columns:1fr}
+}
+
+/* tablet portrait and below: nav folds into a menu */
+@media (max-width:820px){
+  nav.main{
+    position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--surface);
+    border-bottom:1px solid var(--line);gap:2px;display:none;box-shadow:var(--shadow-lift);
+    padding:10px calc(var(--gutter) + env(safe-area-inset-left)) 16px;
+  }
+  nav.main.open{display:flex;animation:fade-down .24s ease both}
+  nav.main a{padding:12px}
+  .menu-btn{display:block}
+  .deck-top{gap:12px}
+}
+@media (max-width:900px){ .whoami{display:none} }
+
+/* phones */
+@media (max-width:560px){
+  .band-head{margin-bottom:20px}
+  .deck-tools{width:100%;justify-content:space-between}
+  .autopick{flex:1 1 auto}
+  .tray-in{gap:10px 12px}
+  .chips{flex:1 1 100%;order:-1}
+  #reserveBtn{flex:1 1 auto;justify-content:center}
+  .m-foot .btn{flex:1 1 140px}
+  .pays{grid-template-columns:1fr}
+  .tk-foot{flex-wrap:wrap}
+}
+
+/* short screens: phones and small tablets turned sideways */
+@media (orientation:landscape) and (max-height:600px){
+  section{scroll-margin-top:62px}
+  .bar{height:54px}
+  .hero{padding-top:clamp(18px,4vh,32px);padding-bottom:clamp(14px,3vh,24px)}
+  .hero::before{display:none}
+  .band{padding:clamp(24px,6vh,42px) 0}
+  .deck-scroll{padding-top:16px;padding-bottom:14px}
+  .stage{height:34px}
+  .scrim{align-items:flex-start}
+  .modal{max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}
+  .tray{padding:9px 0 calc(9px + env(safe-area-inset-bottom))}
+}
+@media (orientation:landscape) and (max-height:600px) and (min-width:760px){
+  .hero-grid{grid-template-columns:minmax(0,1fr) minmax(0,.9fr);align-items:start}
+}
+
+/* very wide desktops get a little more canvas */
+@media (min-width:1500px){
+  :root{--maxw:1260px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;scroll-behavior:auto !important
+  }
+  .reveal{opacity:1 !important;transform:none !important}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="#top" aria-label="TicketVerse home">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="tvg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2440DB"/><stop offset="1" stop-color="#7A2FF2"/>
+          </linearGradient>
+          <mask id="tvm">
+            <rect x="3" y="11" width="42" height="26" rx="6" fill="#fff"/>
+            <circle cx="3" cy="24" r="4.4" fill="#000"/>
+            <circle cx="45" cy="24" r="4.4" fill="#000"/>
+          </mask>
+        </defs>
+        <g mask="url(#tvm)"><rect x="3" y="11" width="42" height="26" rx="6" fill="url(#tvg)"/></g>
+        <rect x="12" y="17" width="17" height="4" rx="1.4" fill="#fff"/>
+        <rect x="18.5" y="17" width="4" height="14" rx="1.4" fill="#fff"/>
+        <path d="M35 15v18" stroke="#fff" stroke-width="2" stroke-dasharray="2 3" stroke-linecap="round" opacity=".85"/>
+      </svg>
+      <span>
+        <b>Ticket<span>Verse</span></b>
+        <small>MCGI CHAPEL</small>
+      </span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">Menu</button>
+    <nav class="main" id="nav">
+      <a href="#book" class="on">Book a seat</a>
+      <a href="#dashboard">Seat dashboard</a>
+      <a href="#tickets">My tickets</a>
+      <a href="#pro">Seat Plan Pro</a>
+    </nav>
+    <div class="whoami" id="whoami" hidden><span class="dot" id="whoDot">G</span><span id="whoName">Guest</span></div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <div class="wrap hero">
+    <div class="hero-grid">
+      <div>
+        <h1>Find your seat before you leave the house.</h1>
+        <p class="lede">TicketVerse holds every one of the 5,000 seats in MCGI Chapel. Pick the one you want,
+          get a QR code, and walk past the queue at the door.</p>
+        <div class="free-line">
+          <b>₱0.00</b><i>Every seat, every service. Seating is free and always will be.</i>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#book">Choose your seat</a>
+          <a class="btn btn-ghost" href="#dashboard">See what's left</a>
+        </div>
+      </div>
+
+      <div class="mosaic-card">
+        <h3>The whole chapel, right now</h3>
+        <p class="sub" id="mosaicSub">Loading seats…</p>
+        <canvas id="mosaic" width="720" height="620" role="img"
+          aria-label="Miniature live map of all 5,000 chapel seats"></canvas>
+        <div class="mosaic-key">
+          <span><i style="background:var(--mosaic-free)"></i>Open</span>
+          <span><i style="background:var(--mosaic-taken)"></i>Reserved</span>
+          <span><i style="background:var(--mosaic-block)"></i>Held by staff</span>
+          <span><i style="background:var(--mosaic-mine)"></i>Yours</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BOOK ================= -->
+  <section id="book" class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <h2>Pick a service, then pick a seat</h2>
+          <p>Seats update live. If someone takes a seat while you are looking at it, it turns grey before you can tap it.</p>
+        </div>
+      </div>
+
+      <div class="services" id="services"></div>
+
+      <div class="panel">
+        <div class="deck-top">
+          <div class="levels" id="levels" role="tablist" aria-label="Chapel levels"></div>
+          <div class="deck-tools">
+            <div class="autopick">
+              <label class="vh" for="autoN">Number of seats to find</label>
+              <input class="inp" id="autoN" type="number" min="1" max="6" value="2" aria-label="Seats to find">
+              <button class="btn btn-quiet" id="autoBtn">Find seats together</button>
+            </div>
+            <div class="zoom" role="group" aria-label="Zoom seat map">
+              <button id="zoomOut" aria-label="Zoom out">−</button>
+              <button id="zoomIn" aria-label="Zoom in">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-scroll">
+          <div class="deck-inner">
+            <div class="stage">PULPIT</div>
+            <div class="deck" id="deck"></div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><i style="background:var(--seat-free);border-color:var(--seat-free-edge)"></i>Available</span>
+          <span><i style="background:linear-gradient(135deg,var(--blue),var(--purple))"></i>Your selection</span>
+          <span><i style="background:var(--seat-taken);border-color:var(--seat-taken-edge)"></i>Reserved</span>
+          <span><i style="background:var(--seat-mine)"></i>Booked by you</span>
+          <span><i style="background:var(--seat-block);border-color:var(--seat-block-edge)"></i>Unavailable — sound desk, camera platform, aisle holds</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DASHBOARD ================= -->
+  <section id="dashboard" class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <h2>Seat dashboard</h2>
+          <p id="dashSub">Live counts for the selected service.</p>
+        </div>
+      </div>
+
+      <div class="ledger">
+        <div><b class="tnum" id="nTotal">5,000</b><small>Seats in the chapel</small></div>
+        <div class="n-avail"><b class="tnum" id="nAvail">—</b><small>Available to book now</small></div>
+        <div class="n-res"><b class="tnum" id="nRes">—</b><small>Reserved by guests</small></div>
+        <div><b class="tnum" id="nBlock">—</b><small>Unavailable seats</small></div>
+      </div>
+
+      <div class="capbar">
+        <h3>How the 5,000 seats are spoken for</h3>
+        <div class="capacity" id="capBar" role="img" aria-label="Capacity breakdown">
+          <span class="s-avail" style="width:0%"></span>
+          <span class="s-res" style="width:0%"></span>
+          <span class="s-block" style="width:0%"></span>
+        </div>
+        <div class="bar-key">
+          <span><i style="background:var(--blue)"></i><b id="kAvail">—</b> available</span>
+          <span><i style="background:var(--purple)"></i><b id="kRes">—</b> reserved</span>
+          <span><i style="background:var(--line-strong)"></i><b id="kBlock">—</b> unavailable</span>
+        </div>
+
+        <div class="tbl-scroll">
+        <table class="levels-tbl">
+          <thead>
+            <tr><th>Level</th><th>Seats</th><th>Available</th><th>Reserved</th><th>Unavailable</th></tr>
+          </thead>
+          <tbody id="levelRows"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TICKETS ================= -->
+  <section id="tickets" class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <h2>My tickets</h2>
+          <p>Every reservation you have made, newest first. Open a ticket at the door and let an usher scan it.</p>
+        </div>
+      </div>
+      <div id="ticketList"></div>
+    </div>
+  </section>
+
+  <!-- ================= PRO ================= -->
+  <section id="pro" class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <h2>Run your own seating with Seat Plan Pro</h2>
+          <p>Booking a chapel seat is free and always will be. Seat Plan Pro is for organisers who want their own
+            venue map — seminars, conferences, concerts, school events — with the same live booking and QR check-in.</p>
+        </div>
+      </div>
+
+      <div class="tiers" id="tiers"></div>
+
+      <div class="panel builder" id="builder">
+        <div>
+          <h3>Build a seat plan</h3>
+          <p class="muted" style="font-size:.86rem;margin-top:6px" id="builderHint">
+            Included with any Seat Plan Pro subscription.</p>
+        </div>
+        <div id="builderBody"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      <b>TicketVerse — MCGI Chapel</b>
+      <p class="foot-note">Skip the line. Book online. Built as a web application concept by Panlilio,
+        Ranoco, Bugayog and Bestudio for ACT&nbsp;1.</p>
+    </div>
+    <div>
+      <b>Good to know</b>
+      <p class="foot-note">Doors open 45 minutes before each service. Reserved seats are released 10 minutes
+        after the service begins. Bring your QR code on your phone or printed.</p>
+    </div>
+    <div>
+      <b>Prototype</b>
+      <p class="foot-note">A working demonstration. Existing occupancy on the map is sample data;
+        seats you book are stored for real and shown live to everyone with the page open.
+        Subscription checkout is simulated — no payment is taken and no card details are stored.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- selection tray -->
+<div class="tray" id="tray" aria-live="polite">
+  <div class="wrap tray-in">
+    <div class="chips" id="chips"></div>
+    <div class="total"><span>Total</span><b>₱0.00 · Free</b></div>
+    <button class="btn btn-primary" id="reserveBtn">Reserve seats</button>
+    <button class="btn btn-quiet" id="clearBtn">Clear</button>
+  </div>
+</div>
+
+<!-- reserve modal -->
+<div class="scrim" id="mReserve" role="dialog" aria-modal="true" aria-labelledby="mReserveTitle">
+  <div class="modal">
+    <div class="m-head">
+      <div><h3 id="mReserveTitle">Confirm your reservation</h3><p id="rvWhen"></p></div>
+      <button class="x" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="m-body">
+      <div>
+        <label class="f" for="rvName">Name on the reservation</label>
+        <input class="inp" id="rvName" maxlength="60" placeholder="e.g. Jake Panlilio" autocomplete="name">
+      </div>
+      <div class="summary">
+        <div><span>Service</span><b id="rvSvc">—</b></div>
+        <div><span>Seats</span><b id="rvSeats">—</b></div>
+        <div><span>Seat price</span><b>Free</b></div>
+        <div class="grand"><span>Total to pay</span><b>₱0.00</b></div>
+      </div>
+      <p class="err" id="rvErr" hidden></p>
+      <p class="note">Your QR code is generated the moment you confirm. Ushers scan it at the chapel entrance.</p>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-ghost" data-close>Back to map</button>
+      <button class="btn btn-primary" id="rvConfirm">Confirm reservation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ticket modal -->
+<div class="scrim" id="mTicket" role="dialog" aria-modal="true" aria-labelledby="mTicketTitle">
+  <div class="modal">
+    <div class="m-head">
+      <div><h3 id="mTicketTitle">Your seat is reserved</h3><p>Show this at the entrance.</p></div>
+      <button class="x" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="stub">
+        <div class="stub-top"><b id="tkSvc">—</b><small id="tkWhen">—</small></div>
+        <div class="perf"></div>
+        <div class="stub-mid">
+          <div class="tk-row"><span>Seats</span><b id="tkSeats">—</b></div>
+          <div class="tk-row"><span>Guest</span><b id="tkName">—</b></div>
+          <div class="tk-row"><span>Booking code</span><b class="tk-code" id="tkCode">—</b></div>
+          <div class="tk-row"><span>Paid</span><b>₱0.00 — free seating</b></div>
+        </div>
+        <div class="qr-box" id="qrBox"></div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-ghost" id="tkSave" hidden>Save ticket</button>
+      <button class="btn btn-primary" data-close>Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- checkout modal -->
+<div class="scrim" id="mPay" role="dialog" aria-modal="true" aria-labelledby="mPayTitle">
+  <div class="modal wide">
+    <div class="m-head">
+      <div><h3 id="mPayTitle">Subscribe to Seat Plan Pro</h3><p id="payTier">—</p></div>
+      <button class="x" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="m-body">
+      <div class="pays">
+        <button class="pay on" data-pay="GCash">GCash<small>Pay with your GCash wallet</small></button>
+        <button class="pay" data-pay="Card">Credit or debit card<small>Visa, Mastercard, JCB</small></button>
+      </div>
+      <div id="payFields"></div>
+      <div class="summary">
+        <div><span>Plan</span><b id="payPlan">—</b></div>
+        <div><span>Billing</span><b>Monthly, cancel anytime</b></div>
+        <div class="grand"><span>Due today</span><b id="payTotal">—</b></div>
+      </div>
+      <p class="err" id="payErr" hidden></p>
+      <p class="note">Demo checkout. No payment is processed and nothing you type here is stored or sent
+        anywhere — please don't enter real card or wallet details.</p>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn-ghost" data-close>Cancel</button>
+      <button class="btn btn-primary" id="payGo">Pay and subscribe</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   1. Chapel definition — 5,000 seats exactly
+   ============================================================ */
+var LEVELS = [
+  { id:'gf', name:'Ground Floor', rows:20, sections:[
+      {id:'gfl', name:'Left Wing',  cols:18},
+      {id:'gfc', name:'Center',     cols:44},
+      {id:'gfr', name:'Right Wing', cols:18}]},          // 20 * 80 = 1600
+  { id:'mz', name:'Mezzanine', rows:12, sections:[
+      {id:'mzl', name:'Left Wing',  cols:18},
+      {id:'mzc', name:'Center',     cols:44},
+      {id:'mzr', name:'Right Wing', cols:18}]},          // 12 * 80 = 960
+  { id:'bl', name:'Balcony', rows:14, sections:[
+      {id:'bll', name:'Left Wing',  cols:18},
+      {id:'blc', name:'Center',     cols:44},
+      {id:'blr', name:'Right Wing', cols:18}]},          // 14 * 80 = 1120
+  { id:'ug', name:'Upper Gallery', rows:15, sections:[
+      {id:'ugl', name:'Left Wing',  cols:18},
+      {id:'ugc', name:'Center',     cols:52},
+      {id:'ugr', name:'Right Wing', cols:18}]}           // 15 * 88 = 1320
+];                                                        // total = 5000
+
+var SECTIONS = [];
+LEVELS.forEach(function(L){
+  L.sections.forEach(function(s){
+    SECTIONS.push({ id:s.id, name:s.name, cols:s.cols, rows:L.rows, levelId:L.id, levelName:L.name });
+  });
+});
+var SEC_BY_ID = {};
+SECTIONS.forEach(function(s){ SEC_BY_ID[s.id] = s; });
+var TOTAL_SEATS = SECTIONS.reduce(function(n,s){ return n + s.rows*s.cols; }, 0);
+
+var SERVICES = [
+  { id:'sun-worship', name:'Sunday Worship Service', day:0, time:'8:00 AM', load:1.00 },
+  { id:'thu-bible',   name:'Thursday Bible Exposition', day:4, time:'7:00 PM', load:0.72 },
+  { id:'sat-youth',   name:'Saturday Youth Gathering', day:6, time:'4:00 PM', load:0.46 }
+];
+
+function nextDate(dow){
+  var d = new Date(); d.setHours(0,0,0,0);
+  var diff = (dow - d.getDay() + 7) % 7;
+  d.setDate(d.getDate() + (diff === 0 ? 7 : diff));
+  return d;
+}
+function niceDate(d){
+  return d.toLocaleDateString(undefined,{ weekday:'long', month:'long', day:'numeric' });
+}
+SERVICES.forEach(function(s){ s.date = nextDate(s.day); s.when = niceDate(s.date) + ' · ' + s.time; });
+
+function rowLetter(i){ return String.fromCharCode(65 + i); }
+function gid(secId,r,c){ return secId + '-' + rowLetter(r) + (c+1); }
+function seatKey(r,c){ return rowLetter(r) + (c+1); }
+function seatLabel(secId,r,c){
+  var s = SEC_BY_ID[secId];
+  return s.levelName + ' ' + s.name + ' ' + rowLetter(r) + (c+1);
+}
+function shortLabel(secId,key){
+  var s = SEC_BY_ID[secId];
+  return s.levelId.toUpperCase() + '·' + s.name.charAt(0) + key;
+}
+function fmt(n){ return n.toLocaleString('en-US'); }
+
+/* Honour the OS "reduce motion" switch everywhere we animate in script. */
+var REDUCED = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+if (window.matchMedia){
+  var rmq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (rmq.addEventListener) rmq.addEventListener('change', function(e){ REDUCED = e.matches; });
+}
+
+/* Counts roll to their new value instead of snapping. */
+function setNum(el, target){
+  if (!el) return;
+  var prev = parseInt(el.getAttribute('data-n'), 10);
+  if (isNaN(prev)) prev = 0;
+  el.setAttribute('data-n', target);
+  if (REDUCED || prev === target || !window.requestAnimationFrame){
+    el.textContent = fmt(target); return;
+  }
+  var id = (el.__tick = (el.__tick || 0) + 1), start = 0, dur = 680;
+  requestAnimationFrame(function step(ts){
+    if (el.__tick !== id) return;
+    if (!start) start = ts;
+    var k = Math.min(1, (ts - start) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(Math.round(prev + (target - prev) * e));
+    if (k < 1) requestAnimationFrame(step);
+  });
+}
+
+/* ============================================================
+   2. Deterministic layout data (same for every visitor)
+   ============================================================ */
+function hashStr(s){
+  var h = 2166136261;
+  for (var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function rng(seed){
+  var a = seed >>> 0;
+  return function(){
+    a = (a + 0x6D2B79F5) | 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* Seats that can never be booked: sound desk, camera platform, held aisle ends. */
+var BLOCKED = {};          // secId -> Set of seat keys
+var BLOCKED_BY_LEVEL = {};
+(function buildBlocked(){
+  SECTIONS.forEach(function(s){
+    var set = Object.create(null), n = 0;
+    var r = rng(hashStr('block:' + s.id));
+    for (var row=0; row<s.rows; row++){
+      for (var col=0; col<s.cols; col++){
+        var bad = false;
+        // sound desk, back of ground-floor centre
+        if (s.id==='gfc' && row>=s.rows-2 && col>=19 && col<=24) bad = true;
+        // camera platform, front of balcony centre
+        if (s.id==='blc' && row===0 && col>=20 && col<=23) bad = true;
+        // translation booths, upper gallery centre back corners
+        if (s.id==='ugc' && row>=s.rows-1 && (col<=3 || col>=s.cols-4)) bad = true;
+        // wheelchair transfer bays kept clear at wing aisle ends
+        if ((s.id==='gfl'||s.id==='gfr') && row<3 && (col===0 || col===s.cols-1)) bad = true;
+        if (!bad && r() < 0.021) bad = true;   // scattered obstructed-view holds
+        if (bad){ set[seatKey(row,col)] = 1; n++; }
+      }
+    }
+    BLOCKED[s.id] = set;
+    BLOCKED_BY_LEVEL[s.levelId] = (BLOCKED_BY_LEVEL[s.levelId]||0) + n;
+    s.blockedCount = n;
+  });
+})();
+var BLOCKED_TOTAL = SECTIONS.reduce(function(n,s){ return n + s.blockedCount; }, 0);
+
+/* Sample occupancy already on the books for each service. */
+var BASE_CACHE = {};
+function baseline(svcId){
+  if (BASE_CACHE[svcId]) return BASE_CACHE[svcId];
+  var svc = SERVICES.filter(function(s){ return s.id===svcId; })[0];
+  var out = { bySec:{}, byLevel:{}, total:0 };
+  SECTIONS.forEach(function(s){
+    var set = Object.create(null), n = 0;
+    var r = rng(hashStr('base:' + svcId + ':' + s.id));
+    var pull = s.id.charAt(1)==='f' ? 0.62 : s.levelId==='mz' ? 0.44 : s.levelId==='bl' ? 0.34 : 0.22;
+    if (s.name==='Center') pull += 0.08;
+    for (var row=0; row<s.rows; row++){
+      var rowP = pull * svc.load * (1 - row/(s.rows*1.75));
+      for (var col=0; col<s.cols; col++){
+        var k = seatKey(row,col);
+        if (BLOCKED[s.id][k]) continue;
+        var edge = Math.abs(col - (s.cols-1)/2) / (s.cols/2);
+        if (r() < rowP * (1 - edge*0.32)){ set[k] = 1; n++; }
+      }
+    }
+    out.bySec[s.id] = set;
+    out.byLevel[s.levelId] = (out.byLevel[s.levelId]||0) + n;
+    out.total += n;
+  });
+  BASE_CACHE[svcId] = out;
+  return out;
+}
+
+/* ============================================================
+   3. Storage — live db when the page is published, local otherwise
+   ============================================================ */
+var Store = {
+  ready:false, cloud:false, db:null, uid:null, name:'', downloads:null,
+  _bus:{}, _localKey:function(k){ return 'ticketverse:' + k; },
+
+  _lsGet:function(k,d){ try{ var v = localStorage.getItem(this._localKey(k)); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  _lsSet:function(k,v){ try{ localStorage.setItem(this._localKey(k), JSON.stringify(v)); }catch(e){} },
+  _emit:function(topic){ (this._bus[topic]||[]).forEach(function(fn){ try{ fn(); }catch(e){} }); },
+  _on:function(topic,fn){
+    (this._bus[topic] = this._bus[topic] || []).push(fn);
+    var self = this;
+    return function(){ self._bus[topic] = (self._bus[topic]||[]).filter(function(f){ return f!==fn; }); };
+  },
+
+  init:function(){
+    var self = this;
+    if (this._initP) return this._initP;
+    // Local identity so the page is usable before (or without) any capability.
+    var local = this._lsGet('me', null);
+    if (!local){ local = { id:'local_' + Math.random().toString(36).slice(2,10) }; this._lsSet('me', local); }
+    this.uid = local.id;
+
+    if (!window.claude || typeof window.claude.use !== 'function'){
+      this._initP = Promise.resolve(false);
+      return this._initP;
+    }
+
+    this._initP = Promise.all([
+      window.claude.use('db').catch(function(){ return null; }),
+      window.claude.use('user').catch(function(){ return null; }),
+      window.claude.use('downloads').catch(function(){ return null; })
+    ]).then(function(res){
+      self.db = res[0]; self.downloads = res[2];
+      var user = res[1];
+      var p = user ? user.me() : Promise.resolve(null);
+      return p.then(function(me){
+        if (me){ self.name = me.name || ''; if (me.id) self.uid = me.id; }
+        self.cloud = !!(self.db && self.uid && self.uid.indexOf('local_') !== 0);
+        self.ready = true;
+        return self.cloud;
+      });
+    }).catch(function(){ return false; });
+    return this._initP;
+  },
+
+  secRef:function(svc,sec){ return this.db.doc('services/' + svc + '/sections/' + sec); },
+
+  /* booked map for one section of one service */
+  watchSection:function(svc, sec, cb){
+    if (this.cloud){
+      return this.secRef(svc,sec).onSnapshot(function(snap){
+        var d = snap.exists ? (snap.data()||{}) : {};
+        cb(d.booked || {});
+      }, function(){ /* keep the page usable */ });
+    }
+    var self = this, key = 'live:' + svc + ':' + sec;
+    var push = function(){ cb(self._lsGet(key, {})); };
+    push();
+    return this._on(key, push);
+  },
+
+  bookSeats:function(svc, sec, entries){
+    var self = this;
+    if (this.cloud){
+      var ref = this.secRef(svc,sec);
+      return ref.update({ booked: entries }).catch(function(e){
+        if (e && (e.code === 'invalid_argument' || e.code === 'transform_error')){
+          return ref.get().then(function(snap){
+            var cur = (snap.exists && snap.data() && snap.data().booked) || {};
+            var merged = {};
+            Object.keys(cur).forEach(function(k){ merged[k] = cur[k]; });
+            Object.keys(entries).forEach(function(k){ merged[k] = entries[k]; });
+            return ref.set({ booked: merged });
+          });
+        }
+        throw e;
+      });
+    }
+    var key = 'live:' + svc + ':' + sec, cur = this._lsGet(key, {});
+    Object.keys(entries).forEach(function(k){ cur[k] = entries[k]; });
+    this._lsSet(key, cur); this._emit(key);
+    return Promise.resolve();
+  },
+
+  releaseSeats:function(svc, sec, keys){
+    var patch = {};
+    keys.forEach(function(k){ patch[k] = null; });
+    return this.bookSeats(svc, sec, patch);
+  },
+
+  myCol:function(){ return this.db.collection('data/users/' + this.uid); },
+
+  watchTickets:function(cb){
+    if (this.cloud){
+      return this.myCol().where('kind','==','ticket').onSnapshot(function(snap){
+        var out = [];
+        snap.docs.forEach(function(d){ var v = d.data()||{}; v.id = d.id; out.push(v); });
+        out.sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+        cb(out);
+      }, function(){ cb([]); });
+    }
+    var self = this, push = function(){
+      var all = self._lsGet('tickets', []);
+      all.sort(function(a,b){ return (b.createdAt||0) - (a.createdAt||0); });
+      cb(all);
+    };
+    push();
+    return this._on('tickets', push);
+  },
+
+  addTicket:function(t){
+    if (this.cloud) return this.myCol().doc(t.id).set(t);
+    var all = this._lsGet('tickets', []); all.push(t); this._lsSet('tickets', all); this._emit('tickets');
+    return Promise.resolve();
+  },
+
+  updateTicket:function(id, patch){
+    if (this.cloud) return this.myCol().doc(id).update(patch);
+    var all = this._lsGet('tickets', []);
+    all.forEach(function(t){ if (t.id===id) Object.keys(patch).forEach(function(k){ t[k] = patch[k]; }); });
+    this._lsSet('tickets', all); this._emit('tickets');
+    return Promise.resolve();
+  },
+
+  watchSub:function(cb){
+    if (this.cloud){
+      return this.myCol().doc('subscription').onSnapshot(function(snap){
+        cb(snap.exists ? (snap.data()||null) : null);
+      }, function(){ cb(null); });
+    }
+    var self = this, push = function(){ cb(self._lsGet('sub', null)); };
+    push();
+    return this._on('sub', push);
+  },
+
+  setSub:function(v){
+    if (this.cloud) return this.myCol().doc('subscription').set(v);
+    this._lsSet('sub', v); this._emit('sub');
+    return Promise.resolve();
+  },
+
+  savePlan:function(p){
+    if (this.cloud) return this.myCol().doc('seatplan').set(p);
+    this._lsSet('seatplan', p);
+    return Promise.resolve();
+  }
+};
+
+/* ============================================================
+   4. App state
+   ============================================================ */
+var state = {
+  svc: SERVICES[0].id,
+  level: 'gf',
+  selected: [],                 // [{sec, key, row, col}]
+  live: {},                     // secId -> booked map
+  liveCount: {},                // secId -> count of live bookings
+  tickets: [],
+  sub: null,
+  unsubSections: []
+};
+
+var $ = function(s,root){ return (root||document).querySelector(s); };
+var $$ = function(s,root){ return Array.prototype.slice.call((root||document).querySelectorAll(s)); };
+
+function toast(msg){
+  var t = $('#toast'); t.textContent = msg; t.classList.add('up');
+  clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove('up'); }, 3400);
+}
+
+function isBlocked(sec,key){ return !!BLOCKED[sec][key]; }
+function isBase(sec,key){ return !!baseline(state.svc).bySec[sec][key]; }
+function liveEntry(sec,key){ var m = state.live[sec]; var v = m && m[key]; return v || null; }
+function isMine(sec,key){ var e = liveEntry(sec,key); return !!(e && e.u === Store.uid); }
+function isTaken(sec,key){ return isBase(sec,key) || !!liveEntry(sec,key); }
+function isSelected(sec,key){
+  return state.selected.some(function(s){ return s.sec===sec && s.key===key; });
+}
+
+function counts(){
+  var live = 0;
+  SECTIONS.forEach(function(s){ live += (state.liveCount[s.id]||0); });
+  var reserved = baseline(state.svc).total + live;
+  return {
+    total: TOTAL_SEATS,
+    blocked: BLOCKED_TOTAL,
+    reserved: reserved,
+    available: TOTAL_SEATS - BLOCKED_TOTAL - reserved
+  };
+}
+
+function levelCounts(levelId){
+  var secs = SECTIONS.filter(function(s){ return s.levelId===levelId; });
+  var total = secs.reduce(function(n,s){ return n + s.rows*s.cols; }, 0);
+  var blocked = secs.reduce(function(n,s){ return n + s.blockedCount; }, 0);
+  var live = secs.reduce(function(n,s){ return n + (state.liveCount[s.id]||0); }, 0);
+  var res = (baseline(state.svc).byLevel[levelId]||0) + live;
+  return { total:total, blocked:blocked, reserved:res, available: total - blocked - res };
+}
+
+/* ============================================================
+   5. Rendering — services
+   ============================================================ */
+function renderServices(){
+  var host = $('#services');
+  host.innerHTML = SERVICES.map(function(s){
+    return '<button class="svc' + (s.id===state.svc ? ' on' : '') + '" data-svc="' + s.id + '" ' +
+           'aria-pressed="' + (s.id===state.svc) + '">' +
+           '<b>' + s.name + '</b><small>' + s.when + '</small>' +
+           '<span class="avail" data-avail="' + s.id + '">—</span></button>';
+  }).join('');
+  updateServiceCounts();
+}
+function updateServiceCounts(){
+  SERVICES.forEach(function(s){
+    var el = $('[data-avail="' + s.id + '"]');
+    if (!el) return;
+    if (s.id === state.svc){
+      el.textContent = fmt(counts().available) + ' seats open';
+    } else {
+      var b = baseline(s.id).total;
+      el.textContent = 'about ' + fmt(TOTAL_SEATS - BLOCKED_TOTAL - b) + ' seats open';
+    }
+  });
+}
+
+/* ============================================================
+   6. Rendering — seat deck
+   ============================================================ */
+function renderLevels(){
+  $('#levels').innerHTML = LEVELS.map(function(L){
+    return '<button role="tab" data-level="' + L.id + '" class="' + (L.id===state.level?'on':'') +
+           '" aria-selected="' + (L.id===state.level) + '">' + L.name + '</button>';
+  }).join('');
+}
+
+function seatClass(sec,key){
+  if (isBlocked(sec,key)) return 'seat blocked';
+  if (isMine(sec,key)) return 'seat mine';
+  if (isTaken(sec,key)) return 'seat taken';
+  if (isSelected(sec,key)) return 'seat sel';
+  return 'seat';
+}
+
+function renderDeck(){
+  var L = LEVELS.filter(function(l){ return l.id===state.level; })[0];
+  var labels = '';
+  for (var r=0;r<L.rows;r++) labels += '<span>' + rowLetter(r) + '</span>';
+
+  var html = '<div class="rowlab" aria-hidden="true">' + labels + '</div>';
+
+  L.sections.forEach(function(sDef, si){
+    var s = SEC_BY_ID[sDef.id];
+    var cells = '';
+    for (var row=0; row<s.rows; row++){
+      for (var col=0; col<s.cols; col++){
+        var key = seatKey(row,col);
+        var cls = seatClass(s.id,key);
+        var dis = (cls.indexOf('taken')>0 || cls.indexOf('blocked')>0 || cls.indexOf('mine')>0);
+        cells += '<button class="' + cls + '" data-sec="' + s.id + '" data-key="' + key +
+                 '" data-r="' + row + '" data-c="' + col + '" tabindex="' + (row===0&&col===0?'0':'-1') +
+                 '" title="' + seatLabel(s.id,row,col) + '" aria-label="' + seatLabel(s.id,row,col) +
+                 (dis ? ', unavailable' : ', available, free') + '"' + (dis?' aria-disabled="true"':'') +
+                 '></button>';
+      }
+    }
+    html += '<div class="sect" style="animation-delay:' + (si * 70) + 'ms"><b>' + s.name + '</b>' +
+            '<div class="grid" data-grid="' + s.id + '" style="grid-template-columns:repeat(' +
+            s.cols + ',var(--seat))">' + cells + '</div></div>';
+  });
+
+  html += '<div class="rowlab" aria-hidden="true">' + labels + '</div>';
+  $('#deck').innerHTML = html;
+}
+
+/* Repaint only what changed, so live updates stay cheap. */
+function repaintSection(secId){
+  var grid = $('[data-grid="' + secId + '"]');
+  if (!grid) return;
+  var kids = grid.children;
+  for (var i=0;i<kids.length;i++){
+    var el = kids[i], key = el.getAttribute('data-key');
+    var cls = seatClass(secId,key);
+    if (el.className !== cls){
+      el.className = cls;
+      var dis = (cls.indexOf('taken')>0 || cls.indexOf('blocked')>0 || cls.indexOf('mine')>0);
+      if (dis) el.setAttribute('aria-disabled','true'); else el.removeAttribute('aria-disabled');
+    }
+  }
+}
+function repaintVisible(){
+  LEVELS.filter(function(l){ return l.id===state.level; })[0]
+    .sections.forEach(function(s){ repaintSection(s.id); });
+}
+
+/* ============================================================
+   7. Selection + tray
+   ============================================================ */
+var MAX_PICK = 6;
+
+function toggleSeat(sec,key,row,col){
+  if (isBlocked(sec,key) || isTaken(sec,key)) return;
+  var i = state.selected.findIndex(function(s){ return s.sec===sec && s.key===key; });
+  if (i >= 0) state.selected.splice(i,1);
+  else {
+    if (state.selected.length >= MAX_PICK){
+      toast('You can hold up to ' + MAX_PICK + ' seats in one reservation.');
+      return;
+    }
+    state.selected.push({ sec:sec, key:key, row:row, col:col });
+  }
+  repaintVisible(); renderTray();
+}
+
+function renderTray(){
+  var tray = $('#tray'), chips = $('#chips');
+  if (!state.selected.length){ tray.classList.remove('up'); chips.innerHTML=''; return; }
+  chips.innerHTML = state.selected.map(function(s){
+    return '<span class="chip">' + shortLabel(s.sec,s.key) +
+           '<button data-drop="' + s.sec + '|' + s.key + '" aria-label="Remove seat ' +
+           shortLabel(s.sec,s.key) + '">✕</button></span>';
+  }).join('');
+  $('#reserveBtn').textContent = 'Reserve ' + state.selected.length +
+    (state.selected.length===1?' seat':' seats');
+  tray.classList.add('up');
+}
+
+function clearSelection(){ state.selected = []; repaintVisible(); renderTray(); }
+
+/* Find N free seats next to each other, closest to the pulpit. */
+function autoPick(n){
+  var best = null;
+  SECTIONS.forEach(function(s){
+    for (var row=0; row<s.rows; row++){
+      var run = [];
+      for (var col=0; col<s.cols; col++){
+        var key = seatKey(row,col);
+        if (isBlocked(s.id,key) || isTaken(s.id,key)){ run = []; continue; }
+        run.push(col);
+        if (run.length >= n){
+          var take = run.slice(run.length-n);
+          var mid = Math.abs((take[0]+take[n-1])/2 - (s.cols-1)/2);
+          var levelPenalty = s.levelId==='gf'?0 : s.levelId==='mz'?14 : s.levelId==='bl'?26 : 38;
+          var score = row + levelPenalty + mid*0.35 + (s.name==='Center'?0:4);
+          if (!best || score < best.score){
+            best = { score:score, sec:s.id, row:row, cols:take };
+          }
+        }
+      }
+    }
+  });
+  if (!best){ toast('No block of ' + n + ' seats together is left for this service.'); return; }
+  state.selected = best.cols.map(function(c){
+    return { sec:best.sec, key:seatKey(best.row,c), row:best.row, col:c };
+  });
+  var s = SEC_BY_ID[best.sec];
+  if (state.level !== s.levelId){ state.level = s.levelId; renderLevels(); renderDeck(); }
+  else repaintVisible();
+  renderTray();
+  toast('Held ' + n + ' seats in ' + s.levelName + ' ' + s.name + ', row ' + rowLetter(best.row) + '.');
+  var first = $('[data-sec="' + best.sec + '"][data-key="' + seatKey(best.row,best.cols[0]) + '"]');
+  if (first) first.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
+}
+
+/* ============================================================
+   8. Dashboard
+   ============================================================ */
+function renderDashboard(){
+  var c = counts();
+  setNum($('#nTotal'), c.total);
+  setNum($('#nAvail'), c.available);
+  setNum($('#nRes'),   c.reserved);
+  setNum($('#nBlock'), c.blocked);
+  setNum($('#kAvail'), c.available);
+  setNum($('#kRes'),   c.reserved);
+  setNum($('#kBlock'), c.blocked);
+
+  var bar = $('#capBar').children;
+  bar[0].style.width = (c.available/c.total*100).toFixed(2) + '%';
+  bar[1].style.width = (c.reserved /c.total*100).toFixed(2) + '%';
+  bar[2].style.width = (c.blocked  /c.total*100).toFixed(2) + '%';
+
+  var svc = SERVICES.filter(function(s){ return s.id===state.svc; })[0];
+  $('#dashSub').textContent = svc.name + ' · ' + svc.when + ' · ' +
+    Math.round(c.reserved/c.total*100) + '% of the chapel is spoken for.';
+
+  $('#levelRows').innerHTML = LEVELS.map(function(L){
+    var lc = levelCounts(L.id);
+    var secNames = L.sections.map(function(s){ return s.name; }).join(', ');
+    return '<tr><td>' + L.name + '<span class="mini">' + secNames + '</span></td>' +
+           '<td class="tnum">' + fmt(lc.total) + '</td>' +
+           '<td class="tnum">' + fmt(lc.available) + '</td>' +
+           '<td class="tnum">' + fmt(lc.reserved) + '</td>' +
+           '<td class="tnum">' + fmt(lc.blocked) + '</td></tr>';
+  }).join('');
+
+  updateServiceCounts();
+}
+
+/* ============================================================
+   9. Hero mosaic — a true miniature of the seat map
+   ============================================================ */
+var mosaicQueued = false;
+function drawMosaic(){
+  if (mosaicQueued) return;
+  mosaicQueued = true;
+  requestAnimationFrame(function(){
+    mosaicQueued = false;
+    var cv = $('#mosaic'), ctx = cv.getContext('2d');
+    var css = getComputedStyle(document.documentElement);
+    var cFree = css.getPropertyValue('--mosaic-free').trim();
+    var cTake = css.getPropertyValue('--mosaic-taken').trim();
+    var cBlok = css.getPropertyValue('--mosaic-block').trim();
+    var cMine = css.getPropertyValue('--mosaic-mine').trim();
+    var cLine = css.getPropertyValue('--line-strong').trim();
+
+    var DOT = 6, GAP = 2, STEP = DOT + GAP, GUT = 22, BAND = 34;
+    var widest = 0;
+    LEVELS.forEach(function(L){
+      var cols = L.sections.reduce(function(n,s){ return n + s.cols; }, 0);
+      widest = Math.max(widest, cols*STEP + 2*GUT);
+    });
+    var h = 46;
+    LEVELS.forEach(function(L){ h += L.rows*STEP + BAND; });
+
+    cv.width = widest; cv.height = h;
+    ctx.clearRect(0,0,widest,h);
+
+    // pulpit arc
+    ctx.strokeStyle = cLine; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.ellipse(widest/2, 8, widest*0.30, 22, 0, 0, Math.PI);
+    ctx.stroke();
+
+    var y = 46;
+    LEVELS.forEach(function(L){
+      var cols = L.sections.reduce(function(n,s){ return n + s.cols; }, 0);
+      var w = cols*STEP + 2*GUT;
+      var x0 = (widest - w)/2;
+      var x = x0;
+      L.sections.forEach(function(sDef,si){
+        var s = SEC_BY_ID[sDef.id];
+        for (var row=0; row<s.rows; row++){
+          for (var col=0; col<s.cols; col++){
+            var key = seatKey(row,col);
+            var fill = cFree;
+            if (isBlocked(s.id,key)) fill = cBlok;
+            else if (isMine(s.id,key)) fill = cMine;
+            else if (isTaken(s.id,key)) fill = cTake;
+            ctx.fillStyle = fill;
+            ctx.fillRect(x + col*STEP, y + row*STEP, DOT, DOT);
+          }
+        }
+        x += s.cols*STEP + (si<2 ? GUT : 0);
+      });
+      y += L.rows*STEP + BAND;
+    });
+
+    var c = counts();
+    $('#mosaicSub').textContent = fmt(c.available) + ' open · ' + fmt(c.reserved) +
+      ' reserved · ' + fmt(c.blocked) + ' held';
+  });
+}
+
+/* ============================================================
+   10. Tickets
+   ============================================================ */
+function code(){
+  var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out = '';
+  for (var i=0;i<6;i++) out += abc.charAt(Math.floor(Math.random()*abc.length));
+  return 'MCGI-' + out;
+}
+
+function renderTickets(){
+  var host = $('#ticketList');
+  if (!state.tickets.length){
+    host.innerHTML = '<div class="empty"><b>No reservations yet</b>' +
+      'Choose a service above, tap the seat you want, and your ticket will appear here.</div>';
+    return;
+  }
+  host.innerHTML = '<div class="tickets">' + state.tickets.map(function(t, ti){
+    var svc = SERVICES.filter(function(s){ return s.id===t.svc; })[0];
+    var cancelled = t.status === 'cancelled';
+    return '<article class="tk" style="animation-delay:' + Math.min(ti * 65, 320) + 'ms">' +
+      '<div class="tk-top"><b>' + (svc?svc.name:t.svcName||'Service') + '</b><small>' + (t.when||'') + '</small></div>' +
+      '<div class="tk-body">' +
+        '<div class="tk-row"><span>Seats</span><b>' + esc(t.seatText||'') + '</b></div>' +
+        '<div class="tk-row"><span>Guest</span><b>' + esc(t.name) + '</b></div>' +
+        '<div class="tk-row"><span>Code</span><b class="tk-code">' + t.id + '</b></div>' +
+        '<div class="tk-row"><span>Status</span><b style="color:' +
+           (cancelled ? 'var(--ink-faint)' : 'var(--purple)') + '">' +
+           (cancelled ? 'Cancelled' : 'Confirmed · Free') + '</b></div>' +
+      '</div>' +
+      '<div class="tk-foot">' +
+        (cancelled ? '' : '<button class="btn btn-ghost" data-show="' + t.id + '">Show QR code</button>' +
+        '<button class="btn btn-quiet" data-cancel="' + t.id + '">Cancel</button>') +
+      '</div></article>';
+  }).join('') + '</div>';
+}
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+
+/* ============================================================
+   11. QR code
+   ============================================================ */
+var qrPromise = null;
+function loadScript(src){
+  return new Promise(function(res,rej){
+    var s = document.createElement('script');
+    s.src = src; s.async = true;
+    s.onload = function(){ res(); }; s.onerror = function(){ rej(new Error('blocked')); };
+    document.head.appendChild(s);
+  });
+}
+function ensureQr(){
+  if (window.QRCode || window.QRious) return Promise.resolve(true);
+  if (!qrPromise){
+    qrPromise = loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js')
+      .catch(function(){})
+      .then(function(){
+        if (window.QRCode) return true;
+        return loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js')
+          .catch(function(){})
+          .then(function(){ return !!window.QRious; });
+      });
+  }
+  return qrPromise;
+}
+function paintQr(el, text, size){
+  el.innerHTML = '<div class="qr-fallback">Preparing code…</div>';
+  return ensureQr().then(function(ok){
+    el.innerHTML = '';
+    if (ok && window.QRCode){
+      new window.QRCode(el, { text:text, width:size, height:size,
+        colorDark:'#10133A', colorLight:'#ffffff',
+        correctLevel: window.QRCode.CorrectLevel.M });
+      return true;
+    }
+    if (ok && window.QRious){
+      var c = document.createElement('canvas'); el.appendChild(c);
+      new window.QRious({ element:c, value:text, size:size, foreground:'#10133A', background:'#ffffff' });
+      return true;
+    }
+    el.innerHTML = '<div class="qr-fallback"><b>' + esc(text.split('|')[1] || text) + '</b><br>' +
+      'Show this code at the entrance — the QR image could not load on this connection.</div>';
+    return false;
+  });
+}
+
+/* ============================================================
+   12. Modals
+   ============================================================ */
+var lastFocus = null;
+function openModal(id){
+  lastFocus = document.activeElement;
+  var m = $('#'+id); m.classList.add('open');
+  var f = m.querySelector('input, button.btn-primary, button');
+  if (f) setTimeout(function(){ f.focus(); }, 40);
+}
+function closeModal(id){
+  $('#'+id).classList.remove('open');
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+$$('.scrim').forEach(function(sc){
+  sc.addEventListener('click', function(e){
+    if (e.target === sc || e.target.hasAttribute('data-close')) sc.classList.remove('open');
+  });
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') $$('.scrim.open').forEach(function(s){ s.classList.remove('open'); });
+});
+
+/* ============================================================
+   13. Booking flow
+   ============================================================ */
+function openReserve(){
+  if (!state.selected.length) return;
+  var svc = SERVICES.filter(function(s){ return s.id===state.svc; })[0];
+  $('#rvSvc').textContent = svc.name;
+  $('#rvWhen').textContent = svc.when;
+  $('#rvSeats').textContent = state.selected.map(function(s){
+    return SEC_BY_ID[s.sec].levelName.split(' ')[0] + ' ' + s.key;
+  }).join(', ');
+  $('#rvErr').hidden = true;
+  var nameEl = $('#rvName');
+  if (!nameEl.value) nameEl.value = Store.name || '';
+  openModal('mReserve');
+}
+
+function confirmReserve(){
+  var name = $('#rvName').value.trim();
+  if (name.length < 2){
+    var e = $('#rvErr'); e.textContent = 'Enter the name the seats should be held under.'; e.hidden = false;
+    $('#rvName').focus(); return;
+  }
+  var clash = state.selected.filter(function(s){ return isTaken(s.sec,s.key); });
+  if (clash.length){
+    var e2 = $('#rvErr');
+    e2.textContent = 'Someone just took ' + clash.map(function(s){ return s.key; }).join(', ') +
+      '. Close this and pick again.';
+    e2.hidden = false;
+    state.selected = state.selected.filter(function(s){ return !isTaken(s.sec,s.key); });
+    repaintVisible(); renderTray();
+    return;
+  }
+
+  var btn = $('#rvConfirm'); btn.disabled = true; btn.textContent = 'Reserving…';
+  var svc = SERVICES.filter(function(s){ return s.id===state.svc; })[0];
+  var id = code(), now = Date.now();
+  var bySec = {};
+  state.selected.forEach(function(s){
+    (bySec[s.sec] = bySec[s.sec] || {})[s.key] = { u: Store.uid, b: id };
+  });
+  var seatText = state.selected.map(function(s){
+    return SEC_BY_ID[s.sec].levelName.split(' ')[0] + ' ' + SEC_BY_ID[s.sec].name.split(' ')[0] + ' ' + s.key;
+  }).join(' · ');
+
+  var chain = Promise.resolve();
+  Object.keys(bySec).forEach(function(sec){
+    chain = chain.then(function(){ return Store.bookSeats(state.svc, sec, bySec[sec]); });
+  });
+
+  chain.then(function(){
+    var ticket = {
+      kind:'ticket', id:id, svc:state.svc, svcName:svc.name, when:svc.when,
+      name:name, seatText:seatText, seats:state.selected.map(function(s){ return s.sec + ':' + s.key; }),
+      createdAt:now, status:'confirmed', price:0
+    };
+    return Store.addTicket(ticket).then(function(){ return ticket; });
+  }).then(function(ticket){
+    btn.disabled = false; btn.textContent = 'Confirm reservation';
+    closeModal('mReserve');
+    clearSelection();
+    showTicket(ticket);
+    toast('Seats reserved. Your ticket is in My tickets.');
+  }).catch(function(err){
+    btn.disabled = false; btn.textContent = 'Confirm reservation';
+    var e3 = $('#rvErr');
+    e3.textContent = (err && err.code === 'quota_exceeded')
+      ? 'The booking store is full for this demo. Cancel an old ticket and try again.'
+      : 'That reservation did not go through. Check your connection and try again.';
+    e3.hidden = false;
+  });
+}
+
+var currentTicket = null;
+function showTicket(t){
+  currentTicket = t;
+  $('#tkSvc').textContent  = t.svcName;
+  $('#tkWhen').textContent = t.when;
+  $('#tkSeats').textContent = t.seatText;
+  $('#tkName').textContent = t.name;
+  $('#tkCode').textContent = t.id;
+  $('#mTicketTitle').textContent = 'Your seat is reserved';
+  openModal('mTicket');
+  var payload = 'MCGI-CHAPEL|' + t.id + '|' + t.svc + '|' + (t.seats||[]).join(',') + '|' + t.createdAt;
+  paintQr($('#qrBox'), payload, 184).then(function(ok){
+    $('#tkSave').hidden = !(ok && Store.downloads);
+  });
+}
+
+function cancelTicket(id){
+  var t = state.tickets.filter(function(x){ return x.id===id; })[0];
+  if (!t) return;
+  var bySec = {};
+  (t.seats||[]).forEach(function(s){
+    var p = s.split(':');
+    (bySec[p[0]] = bySec[p[0]] || []).push(p[1]);
+  });
+  var chain = Promise.resolve();
+  Object.keys(bySec).forEach(function(sec){
+    chain = chain.then(function(){ return Store.releaseSeats(t.svc, sec, bySec[sec]); });
+  });
+  chain.then(function(){ return Store.updateTicket(id, { status:'cancelled' }); })
+    .then(function(){ toast('Reservation cancelled. Those seats are open again.'); })
+    .catch(function(){ toast('Could not cancel that reservation. Try again in a moment.'); });
+}
+
+/* Save the ticket as a PNG through the viewer's download prompt. */
+function saveTicket(){
+  if (!currentTicket || !Store.downloads) return;
+  var src = $('#qrBox').querySelector('canvas') || $('#qrBox').querySelector('img');
+  var W = 760, H = 380;
+  var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  var x = cv.getContext('2d');
+  x.fillStyle = '#ffffff'; x.fillRect(0,0,W,H);
+  var g = x.createLinearGradient(0,0,W,0); g.addColorStop(0,'#2440DB'); g.addColorStop(1,'#7A2FF2');
+  x.fillStyle = g; x.fillRect(0,0,W,86);
+  x.fillStyle = '#fff'; x.font = '600 25px Montserrat, sans-serif';
+  x.fillText(currentTicket.svcName, 34, 42);
+  x.font = '400 15px Montserrat, sans-serif'; x.globalAlpha = .9;
+  x.fillText(currentTicket.when, 34, 68); x.globalAlpha = 1;
+
+  x.fillStyle = '#10133A'; x.font = '600 17px Montserrat, sans-serif';
+  x.fillText(currentTicket.seatText, 34, 140);
+  x.fillStyle = '#585E8C'; x.font = '400 14px Montserrat, sans-serif';
+  x.fillText('Guest: ' + currentTicket.name, 34, 176);
+  x.fillText('Booking code: ' + currentTicket.id, 34, 202);
+  x.fillText('Seat price: ₱0.00 — free seating', 34, 228);
+  x.fillText('MCGI Chapel · TicketVerse', 34, 262);
+  x.strokeStyle = '#CDD1E8'; x.setLineDash([5,5]);
+  x.beginPath(); x.moveTo(500,110); x.lineTo(500,340); x.stroke(); x.setLineDash([]);
+  if (src) x.drawImage(src, 540, 128, 184, 184);
+
+  cv.toBlob(function(blob){
+    if (!blob) return;
+    Store.downloads.save({ filename: currentTicket.id + '.png', data: blob })
+      .then(function(){ toast('Ticket saved.'); })
+      .catch(function(e){ if (e && e.code !== 'declined') toast('Could not save the ticket here.'); });
+  }, 'image/png');
+}
+
+/* ============================================================
+   14. Seat Plan Pro
+   ============================================================ */
+var TIERS = [
+  { id:'starter', name:'Starter', price:499, cap:'Up to 300 seats per plan',
+    feats:['One venue map','3 events a month','QR check-in on any phone','Booking history export'] },
+  { id:'organizer', name:'Organizer', price:1499, cap:'Up to 2,000 seats per plan', star:true,
+    feats:['Unlimited venue maps and events','Custom sections, tiers and aisles','Five staff scanner accounts','Paid or free ticket types','Live seat dashboard'] },
+  { id:'enterprise', name:'Enterprise', price:4999, cap:'Up to 10,000 seats per plan',
+    feats:['Multi-venue and multi-day events','Assigned account manager','API and webhook access','Priority support within 2 hours'] }
+];
+var check = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">' +
+  '<path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function renderTiers(){
+  $('#tiers').innerHTML = TIERS.map(function(t){
+    var owned = state.sub && state.sub.tier === t.id && state.sub.status === 'active';
+    return '<article class="tier' + (t.star?' feature':'') + (owned?' owned':'') + '">' +
+      '<h3>' + t.name + '</h3>' +
+      '<div class="price">₱' + fmt(t.price) + '<small> / month</small></div>' +
+      '<p class="cap">' + t.cap + '</p>' +
+      '<ul>' + t.feats.map(function(f){
+        return '<li><span style="color:var(--purple)">' + check + '</span>' + f + '</li>';
+      }).join('') + '</ul>' +
+      (owned
+        ? '<button class="btn btn-ghost" data-cancelsub="1">Your current plan · cancel</button>'
+        : '<button class="btn ' + (t.star?'btn-primary':'btn-ghost') + '" data-tier="' + t.id +
+          '">Choose ' + t.name + '</button>') +
+      '</article>';
+  }).join('');
+}
+
+function renderBuilder(){
+  var active = state.sub && state.sub.status === 'active';
+  var hint = $('#builderHint');
+  if (!active){
+    hint.textContent = 'Included with any Seat Plan Pro subscription.';
+    $('#builderBody').innerHTML = '<div class="locked">Subscribe above to lay out your own venue — ' +
+      'rows, aisles, sections and capacity — then share a booking link with your guests.</div>';
+    return;
+  }
+  var tier = TIERS.filter(function(t){ return t.id===state.sub.tier; })[0];
+  hint.textContent = 'Active on ' + tier.name + ' · paid by ' + state.sub.method + '. ' + tier.cap + '.';
+  $('#builderBody').innerHTML =
+    '<div class="fields">' +
+      '<div><label class="f" for="pName">Event name</label>' +
+        '<input class="inp" id="pName" placeholder="Leadership Seminar 2026" maxlength="48"></div>' +
+      '<div><label class="f" for="pRows">Rows</label>' +
+        '<input class="inp" id="pRows" type="number" min="1" max="40" value="12"></div>' +
+      '<div><label class="f" for="pCols">Seats per row</label>' +
+        '<input class="inp" id="pCols" type="number" min="2" max="60" value="20"></div>' +
+      '<div><label class="f" for="pAisle">Aisle after every</label>' +
+        '<input class="inp" id="pAisle" type="number" min="0" max="30" value="10"></div>' +
+    '</div>' +
+    '<div class="plan-preview" id="pPreview"></div>' +
+    '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+      '<button class="btn btn-primary" id="pSave">Save this plan</button>' +
+      '<span class="muted" id="pCap" style="align-self:center;font-size:.86rem"></span>' +
+    '</div>';
+
+  ['pRows','pCols','pAisle'].forEach(function(id){
+    $('#'+id).addEventListener('input', drawPlan);
+  });
+  $('#pSave').addEventListener('click', function(){
+    var p = {
+      name: ($('#pName').value || 'Untitled plan').slice(0,48),
+      rows: +$('#pRows').value, cols: +$('#pCols').value, aisle: +$('#pAisle').value,
+      savedAt: Date.now()
+    };
+    Store.savePlan(p).then(function(){ toast('Seat plan saved to your account.'); })
+      .catch(function(){ toast('Could not save the plan just now.'); });
+  });
+  drawPlan();
+}
+
+function drawPlan(){
+  var rows = Math.min(40, Math.max(1, +$('#pRows').value || 1));
+  var cols = Math.min(60, Math.max(2, +$('#pCols').value || 2));
+  var aisle = Math.min(30, Math.max(0, +$('#pAisle').value || 0));
+  var tier = TIERS.filter(function(t){ return state.sub && t.id===state.sub.tier; })[0];
+  var limit = tier ? (tier.id==='starter'?300:tier.id==='organizer'?2000:10000) : 300;
+
+  var perRow = cols + (aisle ? Math.max(0, Math.ceil(cols/aisle) - 1) : 0);
+  var cells = '';
+  for (var r=0;r<rows;r++){
+    for (var c=0;c<cols;c++){
+      if (aisle && c>0 && c % aisle === 0) cells += '<span class="seat gap"></span>';
+      cells += '<span class="seat"></span>';
+    }
+  }
+  $('#pPreview').innerHTML = '<div class="grid" style="grid-template-columns:repeat(' + perRow +
+    ',var(--seat));justify-content:center">' + cells + '</div>';
+  var total = rows*cols;
+  var over = total > limit;
+  $('#pCap').innerHTML = fmt(total) + ' seats' + (over
+    ? ' — <b style="color:var(--purple)">over your ' + fmt(limit) + '-seat plan limit</b>'
+    : ' · within your ' + fmt(limit) + '-seat limit');
+  $('#pSave').disabled = over;
+}
+
+/* checkout */
+var payTierId = null, payMethod = 'GCash';
+function openPay(tierId){
+  payTierId = tierId; payMethod = 'GCash';
+  var t = TIERS.filter(function(x){ return x.id===tierId; })[0];
+  $('#payTier').textContent = t.name + ' · ' + t.cap;
+  $('#payPlan').textContent = 'Seat Plan Pro — ' + t.name;
+  $('#payTotal').textContent = '₱' + fmt(t.price) + '.00';
+  $('#payErr').hidden = true;
+  $$('.pay').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-pay')==='GCash'); });
+  payFields();
+  openModal('mPay');
+}
+function payFields(){
+  var host = $('#payFields');
+  if (payMethod === 'GCash'){
+    host.innerHTML = '<label class="f" for="gc">GCash mobile number</label>' +
+      '<input class="inp" id="gc" inputmode="numeric" maxlength="13" placeholder="0917 000 0000">';
+  } else {
+    host.innerHTML =
+      '<label class="f" for="cc">Card number</label>' +
+      '<input class="inp" id="cc" inputmode="numeric" maxlength="19" placeholder="4111 1111 1111 1111">' +
+      '<div class="fields" style="margin-top:12px">' +
+        '<div><label class="f" for="ce">Expiry</label>' +
+          '<input class="inp" id="ce" maxlength="5" placeholder="09/29"></div>' +
+        '<div><label class="f" for="cv">Security code</label>' +
+          '<input class="inp" id="cv" inputmode="numeric" maxlength="4" placeholder="123"></div>' +
+      '</div>';
+  }
+}
+function doPay(){
+  var err = $('#payErr'); err.hidden = true;
+  var ok = true, digits;
+  if (payMethod === 'GCash'){
+    digits = ($('#gc').value||'').replace(/\D/g,'');
+    if (digits.length < 11){ err.textContent = 'Enter an 11-digit GCash number, starting 09.'; ok = false; }
+  } else {
+    digits = ($('#cc').value||'').replace(/\D/g,'');
+    var exp = ($('#ce').value||'').trim(), cvc = ($('#cv').value||'').replace(/\D/g,'');
+    if (digits.length < 13){ err.textContent = 'Enter a card number of at least 13 digits.'; ok = false; }
+    else if (!/^\d{2}\/\d{2}$/.test(exp)){ err.textContent = 'Enter the expiry as MM/YY.'; ok = false; }
+    else if (cvc.length < 3){ err.textContent = 'Enter the 3 or 4 digit security code.'; ok = false; }
+  }
+  if (!ok){ err.hidden = false; return; }
+
+  var btn = $('#payGo'); btn.disabled = true; btn.textContent = 'Authorising…';
+  setTimeout(function(){
+    // Only the plan and the method are kept. No wallet or card details are stored.
+    Store.setSub({ tier:payTierId, method:payMethod, status:'active', since:Date.now() })
+      .then(function(){
+        btn.disabled = false; btn.textContent = 'Pay and subscribe';
+        closeModal('mPay');
+        toast('Seat Plan Pro is active. Build your first plan below.');
+        var b = document.getElementById('builder');
+        if (b) b.scrollIntoView({ behavior:'smooth', block:'center' });
+      })
+      .catch(function(){
+        btn.disabled = false; btn.textContent = 'Pay and subscribe';
+        err.textContent = 'The subscription could not be saved. Try again.'; err.hidden = false;
+      });
+  }, 750);
+}
+
+/* ============================================================
+   15. Wiring
+   ============================================================ */
+function subscribeSections(){
+  state.unsubSections.forEach(function(u){ try{ u(); }catch(e){} });
+  state.unsubSections = [];
+  state.live = {}; state.liveCount = {};
+  SECTIONS.forEach(function(s){
+    var un = Store.watchSection(state.svc, s.id, function(booked){
+      var live = {}, n = 0;
+      Object.keys(booked||{}).forEach(function(k){
+        var v = booked[k];
+        if (!v) return;                          // null = released
+        if (BLOCKED[s.id][k]) return;
+        live[k] = v;
+        if (!baseline(state.svc).bySec[s.id][k]) n++;
+      });
+      state.live[s.id] = live;
+      state.liveCount[s.id] = n;
+      if (s.levelId === state.level) repaintSection(s.id);
+      renderDashboard();
+      drawMosaic();
+    });
+    if (typeof un === 'function') state.unsubSections.push(un);
+  });
+}
+
+function setService(id){
+  if (id === state.svc) return;
+  state.svc = id;
+  clearSelection();
+  renderServices();
+  subscribeSections();
+  renderDeck();
+  renderDashboard();
+  drawMosaic();
+}
+
+document.addEventListener('click', function(e){
+  var t = e.target;
+  var svcBtn = t.closest && t.closest('[data-svc]');
+  if (svcBtn){ setService(svcBtn.getAttribute('data-svc')); return; }
+
+  var lvl = t.closest && t.closest('[data-level]');
+  if (lvl){
+    state.level = lvl.getAttribute('data-level');
+    renderLevels(); renderDeck();
+    return;
+  }
+
+  if (t.classList && t.classList.contains('seat') && t.hasAttribute('data-sec')){
+    toggleSeat(t.getAttribute('data-sec'), t.getAttribute('data-key'),
+               +t.getAttribute('data-r'), +t.getAttribute('data-c'));
+    return;
+  }
+
+  var drop = t.getAttribute && t.getAttribute('data-drop');
+  if (drop){
+    var p = drop.split('|');
+    state.selected = state.selected.filter(function(s){ return !(s.sec===p[0] && s.key===p[1]); });
+    repaintVisible(); renderTray();
+    return;
+  }
+
+  var show = t.getAttribute && t.getAttribute('data-show');
+  if (show){
+    var tk = state.tickets.filter(function(x){ return x.id===show; })[0];
+    if (tk) showTicket(tk);
+    return;
+  }
+  var can = t.getAttribute && t.getAttribute('data-cancel');
+  if (can){ cancelTicket(can); return; }
+
+  var tier = t.getAttribute && t.getAttribute('data-tier');
+  if (tier){ openPay(tier); return; }
+
+  if (t.getAttribute && t.getAttribute('data-cancelsub')){
+    Store.setSub({ tier:state.sub.tier, method:state.sub.method, status:'cancelled', since:state.sub.since })
+      .then(function(){ toast('Subscription cancelled. Your saved plans stay in your account.'); });
+    return;
+  }
+
+  var pay = t.closest && t.closest('[data-pay]');
+  if (pay){
+    payMethod = pay.getAttribute('data-pay');
+    $$('.pay').forEach(function(b){ b.classList.toggle('on', b===pay); });
+    payFields();
+    return;
+  }
+});
+
+/* keyboard roving focus inside a seat grid */
+document.addEventListener('keydown', function(e){
+  var t = e.target;
+  if (!t.classList || !t.classList.contains('seat') || !t.hasAttribute('data-sec')) return;
+  var map = { ArrowRight:[0,1], ArrowLeft:[0,-1], ArrowDown:[1,0], ArrowUp:[-1,0] };
+  var d = map[e.key];
+  if (!d) return;
+  e.preventDefault();
+  var sec = t.getAttribute('data-sec');
+  var r = +t.getAttribute('data-r') + d[0], c = +t.getAttribute('data-c') + d[1];
+  var next = document.querySelector('[data-sec="' + sec + '"][data-key="' + seatKey(r,c) + '"]');
+  if (next){ t.tabIndex = -1; next.tabIndex = 0; next.focus(); }
+});
+
+$('#zoomIn').addEventListener('click', function(){ setZoom(2); });
+$('#zoomOut').addEventListener('click', function(){ setZoom(-2); });
+var manualZoom = false;
+function setZoom(delta){
+  manualZoom = true;
+  var cur = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--seat'),10) || 11;
+  var next = Math.max(5, Math.min(22, cur + delta));
+  document.documentElement.style.setProperty('--seat', next + 'px');
+}
+/* Phone, tablet or desktop, portrait or landscape: fit the chapel to the glass. */
+function autoSeat(){
+  if (manualZoom) return;
+  var w = document.documentElement.clientWidth || window.innerWidth || 1024;
+  var h = window.innerHeight || 800;
+  var px = w < 400 ? 7 : w < 560 ? 8 : w < 820 ? 9 : w < 1180 ? 10 : 11;
+  if (h < 520 && px > 7) px -= 1;
+  document.documentElement.style.setProperty('--seat', px + 'px');
+}
+$('#autoBtn').addEventListener('click', function(){
+  var n = Math.max(1, Math.min(MAX_PICK, parseInt($('#autoN').value,10) || 1));
+  $('#autoN').value = n;
+  autoPick(n);
+});
+$('#reserveBtn').addEventListener('click', openReserve);
+$('#clearBtn').addEventListener('click', clearSelection);
+$('#rvConfirm').addEventListener('click', confirmReserve);
+$('#tkSave').addEventListener('click', saveTicket);
+$('#payGo').addEventListener('click', doPay);
+
+$('#menuBtn').addEventListener('click', function(){
+  var n = $('#nav'), open = n.classList.toggle('open');
+  this.setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+$$('nav.main a').forEach(function(a){
+  a.addEventListener('click', function(){ $('#nav').classList.remove('open'); });
+});
+$('#mosaic').addEventListener('click', function(){
+  document.getElementById('book').scrollIntoView({ behavior:'smooth' });
+});
+
+/* nav highlight */
+if ('IntersectionObserver' in window){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (!en.isIntersecting) return;
+      $$('nav.main a').forEach(function(a){
+        a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id);
+      });
+    });
+  }, { rootMargin:'-45% 0px -50% 0px' });
+  ['book','dashboard','tickets','pro'].forEach(function(id){
+    var el = document.getElementById(id); if (el) io.observe(el);
+  });
+}
+
+/* repaint mosaic when the system theme flips */
+if (window.matchMedia){
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', drawMosaic);
+}
+function onViewportChange(){
+  autoSeat();
+  clearTimeout(window.__rz);
+  window.__rz = setTimeout(drawMosaic, 200);
+}
+window.addEventListener('resize', onViewportChange);
+window.addEventListener('orientationchange', function(){ setTimeout(onViewportChange, 160); });
+
+/* ============================================================
+   15b. Entrances
+   ============================================================ */
+(function(){
+  var hdr = document.querySelector('header');
+  function onScroll(){ hdr.classList.toggle('scrolled', window.pageYOffset > 6); }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  var targets = [];
+  ['.band-head','#services','#book .panel','.ledger','.capbar','#ticketList','.tiers','#builder','.foot-grid']
+    .forEach(function(sel){
+      $$(sel).forEach(function(el){ if (targets.indexOf(el) < 0) targets.push(el); });
+    });
+
+  if (REDUCED || !('IntersectionObserver' in window)) return;
+  targets.forEach(function(el){ el.classList.add('reveal'); });
+
+  var ro = new IntersectionObserver(function(rows){
+    rows.forEach(function(r){
+      if (!r.isIntersecting) return;
+      r.target.classList.add('in');
+      ro.unobserve(r.target);
+    });
+  }, { threshold:.05, rootMargin:'0px 0px -6% 0px' });
+
+  targets.forEach(function(el, i){
+    el.style.transitionDelay = (i % 3) * 80 + 'ms';
+    ro.observe(el);
+  });
+})();
+
+/* ============================================================
+   16. Boot
+   ============================================================ */
+function boot(){
+  autoSeat();
+  renderServices();
+  renderLevels();
+  renderDeck();
+  renderDashboard();
+  renderTickets();
+  renderTiers();
+  renderBuilder();
+  drawMosaic();
+  subscribeSections();
+
+  Store.init().then(function(){
+    if (Store.name){
+      $('#whoami').hidden = false;
+      $('#whoName').textContent = Store.name;
+      $('#whoDot').textContent = Store.name.trim().charAt(0).toUpperCase() || 'G';
+      var rv = $('#rvName'); if (!rv.value) rv.value = Store.name;
+    }
+    subscribeSections();
+    Store.watchTickets(function(list){
+      state.tickets = list; renderTickets();
+    });
+    Store.watchSub(function(sub){
+      state.sub = sub; renderTiers(); renderBuilder();
+    });
+  });
+}
+Store.init().then(boot, boot);
+})();
+</script>
+</body>
+</html>
