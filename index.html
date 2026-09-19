@@ -49,6 +49,8 @@ section.block{padding-block:clamp(40px,6vw,76px)}
 .h2{font-size:clamp(1.45rem,3.3vw,2.2rem)}
 .lead{color:var(--muted);max-width:64ch;margin-top:10px;font-size:clamp(.92rem,1.6vw,1.02rem)}
 .hide{display:none!important}
+.page{display:none}
+.page.active{display:block}
 
 /* NAV */
 header.nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 84%,transparent);border-bottom:1px solid var(--line)}
@@ -282,7 +284,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
       <div><b>Ticket<i>Verse</i></b><small>MCGI Chapel</small></div>
     </div>
     <nav class="navlinks">
-      <a href="#events">Events</a>
+      <a href="#home">Home</a>
       <a href="#dashboard">Dashboard</a>
       <a href="#booking">Seat map</a>
       <a href="#tickets">My tickets</a>
@@ -296,11 +298,11 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </header>
 <nav class="mobtabs">
-  <a href="#events">Events</a><a href="#dashboard">Dashboard</a><a href="#booking">Seat map</a>
+  <a href="#home">Home</a><a href="#dashboard">Dashboard</a><a href="#booking">Seat map</a>
   <a href="#tickets">My tickets</a><a href="#plans">Plans</a><a href="#profile">Profile</a>
 </nav>
 
-<section class="hero">
+<section class="hero page active" id="home">
   <div class="wrap hero-in">
     <div>
       <div class="pill"><i class="dot"></i><span id="liveLabel">Connecting to the live seat map…</span></div>
@@ -323,10 +325,8 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
       <div class="cap"><span>Live floor plan</span><span id="miniCount">—</span></div>
     </div>
   </div>
-</section>
 
-<section class="block" id="events" style="padding-top:clamp(20px,3vw,34px)">
-  <div class="wrap">
+  <div class="wrap" style="margin-top:clamp(36px,6vw,64px)">
     <div class="rv" style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
       <div style="margin-right:auto">
         <div class="eyebrow">What's on</div>
@@ -342,7 +342,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </section>
 
-<section class="block" id="dashboard" style="padding-top:0">
+<section class="block page" id="dashboard" style="padding-top:0">
   <div class="wrap">
     <div class="rv">
       <div class="eyebrow">Live dashboard</div>
@@ -353,7 +353,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </section>
 
-<section class="block" id="booking" style="padding-top:0">
+<section class="block page" id="booking" style="padding-top:0">
   <div class="wrap">
     <div class="rv">
       <div class="eyebrow">Interactive seat map</div>
@@ -364,7 +364,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </section>
 
-<section class="block" id="tickets" style="padding-top:0">
+<section class="block page" id="tickets" style="padding-top:0">
   <div class="wrap">
     <div class="rv">
       <div class="eyebrow">Live booking history</div>
@@ -375,7 +375,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </section>
 
-<section class="block hide" id="profile" style="padding-top:0">
+<section class="block page hide" id="profile" style="padding-top:0">
   <div class="wrap">
     <div class="eyebrow">Your account</div>
     <h2 class="h2">Profile</h2>
@@ -383,7 +383,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </section>
 
-<section class="block" id="plans" style="padding-top:0">
+<section class="block page" id="plans" style="padding-top:0">
   <div class="wrap">
     <div class="rv">
       <div class="eyebrow">For organizers</div>
@@ -1271,8 +1271,11 @@ document.addEventListener('click',function(ev0){
   var pl=t.closest('[data-plan]');if(pl){closeModal();choosePlan(pl.dataset.plan);return}
   var qr=t.closest('[data-qr]');if(qr){var tk=null;myTickets.forEach(function(x){if(x.id===qr.dataset.qr)tk=x});if(tk)showTicket(tk,false);return}
   var rl=t.closest('[data-rel]');if(rl){releaseTicket(rl.dataset.rel);return}
-  var zn=t.closest('[data-zone]');if(zn){currentZone=zn.dataset.zone;selected=[];renderMap();renderTray();
-    setTimeout(function(){var p=$('seatPanel');if(p)p.scrollIntoView({behavior:'smooth',block:'start'})},60);return}
+  var zn=t.closest('[data-zone]');if(zn){
+    var wasOpen=currentZone===zn.dataset.zone;
+    currentZone=wasOpen?null:zn.dataset.zone; selected=[]; renderMap(); renderTray();
+    if(!wasOpen) setTimeout(function(){var p=$('seatPanel');if(p)p.scrollIntoView({behavior:'smooth',block:'start'})},60);
+    return}
   var st=t.closest('.seat');if(st){
     var e=curEv(),z=zoneOf(e,currentZone);
     if(e.status==='ended'){toast('This event has ended.');return}
@@ -1304,6 +1307,15 @@ $('loginBtn').onclick=openAuth;
 var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
 document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
 
+/* ============ PAGE ROUTER (tabs) ============ */
+var PAGES=['home','dashboard','booking','tickets','profile','plans'];
+function showPage(id){
+  if(PAGES.indexOf(id)<0) id='home';
+  PAGES.forEach(function(p){ var el=$(p); if(el) el.classList.toggle('active', p===id); });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.addEventListener('hashchange',function(){ showPage((location.hash||'#home').slice(1)); });
+
 /* ============ BOOT ============ */
 Store.init().then(function(){
   if(window.claude&&window.claude.use){
@@ -1313,6 +1325,7 @@ Store.init().then(function(){
   var s=null;try{s=localStorage.getItem(SES)}catch(e){}
   if(s){ uid=s; watchMe(s); watchTicketsOnce(); }
   renderAll();
+  showPage((location.hash||'#home').slice(1));
 });
 })();
 </script>
