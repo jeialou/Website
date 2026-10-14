@@ -285,7 +285,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
     </div>
     <nav class="navlinks">
       <a href="#home">Home</a>
-      <a href="#dashboard">Dashboard</a>
+      <a href="#dashboard" id="navDash" class="hide">Dashboard</a>
       <a href="#booking">Seat map</a>
       <a href="#tickets">My tickets</a>
       <a href="#plans">Plans</a>
@@ -298,7 +298,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
   </div>
 </header>
 <nav class="mobtabs">
-  <a href="#home">Home</a><a href="#dashboard">Dashboard</a><a href="#booking">Seat map</a>
+  <a href="#home">Home</a><a href="#dashboard" id="navDashM" class="hide">Dashboard</a><a href="#booking">Seat map</a>
   <a href="#tickets">My tickets</a><a href="#plans">Plans</a><a href="#profile">Profile</a>
 </nav>
 
@@ -313,7 +313,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
         <button class="btn btn-ghost" data-act="create-event">Create your own event and seats</button>
       </div>
       <div class="hero-facts">
-        <div><b>5,000</b><span>Chapel seats</span></div>
+        <div><b id="heroTotal">—</b><span>Chapel seats</span></div>
         <div><b id="heroFree">—</b><span>Available now</span></div>
         <div><b>₱0.00</b><span>Chapel entry</span></div>
         <div><b id="heroEvents">—</b><span>Live events</span></div>
@@ -388,7 +388,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
     <div class="rv">
       <div class="eyebrow">For organizers</div>
       <h2 class="h2">Build your own seat plan</h2>
-      <p class="lead">Running a seminar, conference or live performance? Subscribe and get the same seat map, QR check-in and live dashboard for your own venue.</p>
+      <p class="lead">Running a seminar, conference or live performance? Subscribe and get the same seat map, QR check-in and no-show handling for your own venue.</p>
     </div>
     <div class="plans rv" style="margin-top:30px" id="planGrid"></div>
     <p class="pay-note">Pay with GCash or any Visa / Mastercard debit or credit card · Upgrade or cancel anytime · Prototype checkout — no real payment is processed.</p>
@@ -485,10 +485,10 @@ var PLANS=[
   feats:['1 active event','Up to 300 seats','1 seating zone','Free-entry events only','QR check-in at the gate']},
  {id:'organizer',name:'Organizer',price:550,best:true,blurb:'For conferences and ticketed shows that run all year.',
   lim:{events:5,seats:2000,zones:4,dashboard:true,pricing:true,noshow:true,export:false},
-  feats:['5 active events','Up to 2,000 seats','4 zones with aisles','Set your own seat prices','Live dashboard for your events','Automatic no-show release']},
+  feats:['5 active events','Up to 2,000 seats','4 zones with aisles','Set your own seat prices','Automatic no-show release']},
  {id:'enterprise',name:'Enterprise',price:1000,blurb:'For venues and auditoriums running events every week.',
   lim:{events:99,seats:10000,zones:8,dashboard:true,pricing:true,noshow:true,export:true},
-  feats:['Unlimited active events','Up to 10,000 seats','8 zones + premium front rows','Set your own seat prices','Live dashboard for your events','Automatic no-show release','Attendee list export']}
+  feats:['Unlimited active events','Up to 10,000 seats','8 zones + premium front rows','Set your own seat prices','Automatic no-show release','Attendee list export']}
 ];
 function plan(id){for(var i=0;i<PLANS.length;i++)if(PLANS[i].id===id)return PLANS[i];return null}
 function myPlan(){return me&&me.plan?plan(me.plan):null}
@@ -496,19 +496,18 @@ function lim(k){var p=myPlan();return p?p.lim[k]:null}
 
 /* ============ CHAPEL LAYOUT ============ */
 var CHAPEL_ZONES=[
- {code:'GFL',name:'Ground Floor Left',tier:'Ground Floor',rows:20,cols:25,aisle:10,price:0},
- {code:'GFC',name:'Ground Floor Center',tier:'Ground Floor',rows:25,cols:40,aisle:10,price:0},
- {code:'GFR',name:'Ground Floor Right',tier:'Ground Floor',rows:20,cols:25,aisle:10,price:0},
- {code:'MZL',name:'Mezzanine Left',tier:'Mezzanine',rows:12,cols:25,aisle:10,price:0},
- {code:'MZC',name:'Mezzanine Center',tier:'Mezzanine',rows:15,cols:40,aisle:10,price:0},
- {code:'MZR',name:'Mezzanine Right',tier:'Mezzanine',rows:12,cols:25,aisle:10,price:0},
- {code:'BCL',name:'Balcony Left',tier:'Balcony',rows:10,cols:25,aisle:10,price:0},
- {code:'BCC',name:'Balcony Center',tier:'Balcony',rows:20,cols:40,aisle:10,price:0},
- {code:'BCR',name:'Balcony Right',tier:'Balcony',rows:10,cols:25,aisle:10,price:0},
- {code:'UPG',name:'Upper Gallery',tier:'Upper Gallery',rows:20,cols:25,aisle:10,price:0}
+ {code:'GFL',name:'Ground Left',tier:'Ground',rows:20,cols:25,aisle:10,price:0},
+ {code:'GFC',name:'Ground Center',tier:'Ground',rows:30,cols:40,aisle:10,price:0},
+ {code:'GFR',name:'Ground Right',tier:'Ground',rows:20,cols:25,aisle:10,price:0},
+ {code:'MZL',name:'Lowerbox Left',tier:'Lowerbox',rows:12,cols:25,aisle:10,price:0},
+ {code:'MZC',name:'Lowerbox Center',tier:'Lowerbox',rows:20,cols:40,aisle:10,price:0},
+ {code:'MZR',name:'Lowerbox Right',tier:'Lowerbox',rows:12,cols:25,aisle:10,price:0},
+ {code:'BCL',name:'Upperbox Left',tier:'Upperbox',rows:12,cols:25,aisle:10,price:0},
+ {code:'BCC',name:'Upperbox Center',tier:'Upperbox',rows:20,cols:40,aisle:10,price:0},
+ {code:'BCR',name:'Upperbox Right',tier:'Upperbox',rows:12,cols:25,aisle:10,price:0}
 ];
 var BUILTIN=[{id:'chapel-main',name:'Worship Service',venue:'MCGI Chapel',kind:'chapel',ownerId:null,ownerName:'MCGI Chapel',
-  when:'Every Sunday · 9:00 AM',startsAt:null,grace:20,status:'active',zones:CHAPEL_ZONES,createdAt:0}];
+  when:'Every Saturday · Reservations open 12:00 NN · Open to everyone 3:00 PM',startsAt:null,grace:20,status:'active',zones:CHAPEL_ZONES,createdAt:0}];
 
 /* ============ STATE ============ */
 var me=null,uid=null,isOwnerViewer=false;
@@ -549,7 +548,11 @@ function rebuildEvents(){
   BUILTIN.forEach(function(e){events[e.id]=JSON.parse(JSON.stringify(e))});
   for(var k in dbEvents){ var d=dbEvents[k];
     events[k]=Object.assign({},events[k]||{},d,{id:k});
-    if(!events[k].zones||!events[k].zones.length) events[k].zones=CHAPEL_ZONES; }
+    if(!events[k].zones||!events[k].zones.length) events[k].zones=CHAPEL_ZONES;
+    // move older saved copies of the built-in service onto the new Saturday schedule
+    if(k==='chapel-main'&&events[k].when==='Every Sunday · 9:00 AM') events[k].when=BUILTIN[0].when;
+    // migrate older saved chapel layouts that still include the removed Upper Gallery
+    if(events[k].kind==='chapel'&&events[k].zones.some(function(z){return z.code==='UPG'})) events[k].zones=JSON.parse(JSON.stringify(CHAPEL_ZONES)); }
   if(!events[currentEvent]) currentEvent='chapel-main';
 }
 function watchSeats(){
@@ -639,6 +642,9 @@ function signOut(silent){
   renderAll(); if(!silent) toast('Signed out.');
 }
 function renderAuth(){
+  var admin=isAdmin();
+  $('navDash').classList.toggle('hide',!admin); $('navDashM').classList.toggle('hide',!admin);
+  renderDash();
   var slot=$('authSlot');
   if(!me){ slot.innerHTML='<button class="btn btn-primary btn-sm" id="loginBtn">Log in / Sign up</button>';
     $('loginBtn').onclick=openAuth; return; }
@@ -656,6 +662,7 @@ function renderHero(){
   var e=ev('chapel-main'), free=0,total=0,known=currentEvent==='chapel-main';
   if(e){ total=evSeats(e); free= known ? total-evTaken(e) : total; }
   $('heroFree').textContent=known?fmt(free):'—';
+  $('heroTotal').textContent=fmt(total);
   $('heroEvents').textContent=fmt(evList().filter(function(x){return x.status!=='ended'}).length);
   $('miniCount').textContent=fmt(free)+' of '+fmt(total)+' free';
   var host=$('miniRows');
@@ -700,15 +707,17 @@ function animateTo(el,target){
 }
 function renderDash(){
   var e=curEv(); if(!e)return;
-  $('dashTitle').textContent=e.name+' — seat availability';
-  $('dashSub').textContent=e.venue+' · '+(e.when||'schedule to be announced')+' · numbers update the moment a seat is booked, released or reset.';
-  if(!canDash(e)){
-    $('dashBody').innerHTML='<div class="lock"><span class="badge plan">ORGANIZER PLAN</span>'
-      +'<b style="font-size:1rem">The live dashboard is an Organizer feature</b>'
-      +'<p class="lead" style="margin:0">This event was created on the Starter plan, so its analytics dashboard is locked. Upgrade to Organizer or Enterprise to unlock live seat analytics for your events.</p>'
-      +'<a class="btn btn-primary btn-sm" href="#plans">See plans</a></div>';
+  if(!isAdmin()){
+    $('dashTitle').textContent='Dashboard';
+    $('dashSub').textContent='Live seat analytics for MCGI Chapel administrators.';
+    $('dashBody').innerHTML='<div class="lock"><span class="badge admin">ADMIN ONLY</span>'
+      +'<b style="font-size:1rem">The dashboard is for administrators</b>'
+      +'<p class="lead" style="margin:0">Only the MCGI Chapel administrator can view live seat analytics. You can still book seats and see your own tickets.</p>'
+      +(me?'':'<button class="btn btn-primary btn-sm" data-act="login">Log in / Sign up</button>')+'</div>';
     return;
   }
+  $('dashTitle').textContent=e.name+' — seat availability';
+  $('dashSub').textContent=e.venue+' · '+(e.when||'schedule to be announced')+' · numbers update the moment a seat is booked, released or reset.';
   var tot=evSeats(e),tk=evTaken(e),av=tot-tk,ids=myTicketIds(),mn=0;
   e.zones.forEach(function(z){var m=seatMap(z.code);for(var k in m){if(m[k]&&ids[m[k]])mn++}});
   var noshow=0;
@@ -877,7 +886,7 @@ function renderProfile(){
     myEvents.forEach(function(e){
       var tot=evSeats(e);
       h+='<div class="ev"><div class="tag-row"><span class="badge '+(e.status==='ended'?'bad':'ok')+'">'+(e.status==='ended'?'ENDED':'OPEN')+'</span>'
-       +'<span class="badge none">'+fmt(tot)+' SEATS</span>'+(canDash(e)?'<span class="badge plan">DASHBOARD</span>':'')+'</div>'
+       +'<span class="badge none">'+fmt(tot)+' SEATS</span>'+'</div>'
        +'<h4>'+esc(e.name)+'</h4><div class="meta">'+esc(e.venue)+' · '+esc(e.when||'TBA')+'</div>'
        +'<div class="foot"><button class="btn btn-primary btn-sm" data-open="'+esc(e.id)+'">Open</button>'
        +'<button class="btn btn-ghost btn-sm" data-manage="'+esc(e.id)+'">Manage</button></div></div>';
@@ -891,7 +900,8 @@ function renderProfile(){
     h+='<div class="panel" style="margin-top:14px"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">'
      +'<div style="margin-right:auto"><h3 style="font-size:1rem">MCGI Chapel administration</h3>'
      +'<p class="lead" style="font-size:.8rem;margin-top:2px">Create, edit, reset and check in chapel events.</p></div>'
-     +'<button class="btn btn-primary btn-sm" id="newChapelEvent2">+ New chapel event</button></div><div class="ev-grid" style="margin-top:16px">';
+     +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="manageAdmins">Manage admins</button>'
+     +'<button class="btn btn-primary btn-sm" id="newChapelEvent2">+ New chapel event</button></div></div><div class="ev-grid" style="margin-top:16px">';
     chapelEvents.forEach(function(e){
       h+='<div class="ev"><div class="tag-row"><span class="badge '+(e.status==='ended'?'bad':'ok')+'">'+(e.status==='ended'?'ENDED':'OPEN')+'</span>'
        +'<span class="badge none">'+fmt(evSeats(e))+' SEATS</span></div><h4>'+esc(e.name)+'</h4>'
@@ -904,6 +914,39 @@ function renderProfile(){
   $('profBody').innerHTML=h;
   if($('signOutBtn'))$('signOutBtn').onclick=function(){signOut()};
   if($('newChapelEvent2'))$('newChapelEvent2').onclick=function(){openBuilder('chapel')};
+  if($('manageAdmins'))$('manageAdmins').onclick=openAdmins;
+}
+function openAdmins(){
+  if(!isAdmin())return;
+  Store.getColl('accounts',null).then(function(list){
+    var accts=list.map(function(d){return d.data}).sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
+    var admins=accts.filter(function(a){return a.role==='admin'}).length;
+    var h='<h3>Manage admins</h3><p class="sub">Admins can create chapel events, reset seats and view the dashboard.</p>'
+      +'<div style="display:grid;gap:10px;margin-top:16px;max-height:50vh;overflow-y:auto">';
+    accts.forEach(function(a){
+      var isA=a.role==='admin',self=me&&a.uid===me.uid,m=METHODS[a.method]||METHODS.email;
+      h+='<div class="zrow" style="margin-top:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+       +'<span class="av">'+esc(initials(a.name))+'</span>'
+       +'<div style="margin-right:auto;min-width:120px"><b style="font-size:.84rem">'+esc(a.name)+(self?' (you)':'')+'</b>'
+       +'<div style="font-size:.72rem;color:var(--muted);font-weight:600">'+esc(m.short)+' · '+esc(a.handle)+'</div></div>'
+       +(isA?'<span class="badge admin">ADMIN</span>':'')
+       +(isA?(admins>1?'<button class="btn btn-ghost btn-sm" data-adm="'+esc(a.uid)+'" data-to="member">Remove admin</button>':'')
+            :'<button class="btn btn-primary btn-sm" data-adm="'+esc(a.uid)+'" data-to="admin">Make admin</button>')
+       +'</div>';
+    });
+    h+='</div><div class="note">There must always be at least one admin, so the last one cannot be removed.</div>'
+      +'<div class="modal-acts"><button class="btn btn-ghost btn-block" data-close>Close</button></div>';
+    openModal(h);
+    $('ovBody').querySelectorAll('[data-adm]').forEach(function(b){
+      b.onclick=function(){
+        b.disabled=true;
+        Store.merge('accounts/'+b.dataset.adm,{role:b.dataset.to}).then(function(){
+          toast(b.dataset.to==='admin'?'Admin access granted.':'Admin access removed.');
+          openAdmins();
+        }).catch(function(){toast('Could not update that account.');b.disabled=false});
+      };
+    });
+  });
 }
 function ms(v,l){return '<div class="ms"><b>'+fmt(v)+'</b><span>'+esc(l)+'</span></div>'}
 
