@@ -51,6 +51,46 @@ section.block{padding-block:clamp(40px,6vw,76px)}
 .h2{font-size:clamp(1.45rem,3.3vw,2.2rem)}
 .lead{color:var(--muted);max-width:64ch;margin-top:10px;font-size:clamp(.92rem,1.6vw,1.02rem)}
 .hide{display:none!important}
+.seat-rows{position:relative}
+.gsvg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:4}
+.gcase{fill:none;stroke:#fff;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;opacity:.95}
+.gpath{fill:none;stroke:#F59E0B;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
+.gplan{flex:1 1 100%!important;max-width:560px;margin:6px auto 0}
+.gplan small{display:block;margin-bottom:6px;font-size:.72rem;font-weight:700;color:var(--muted)}
+.gplan svg{display:block;width:100%;height:auto;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.gblk{fill:var(--surface-3);stroke:var(--line);stroke-width:1}
+.gblk.on{fill:rgba(245,158,11,.28);stroke:#F59E0B;stroke-width:2}
+.gblt{font:700 9.5px Montserrat,sans-serif;fill:var(--muted)}
+.gblk.on+.gblt{fill:var(--text)}
+.gstage{fill:url(#gstg)}
+.gtxt{font:800 8px Montserrat,sans-serif;fill:var(--warn);letter-spacing:.08em}
+.gpin{fill:none;stroke:#F59E0B;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:gpulse 1.4s ease-out infinite}
+@keyframes gpulse{from{transform:scale(.6);opacity:1}to{transform:scale(1.9);opacity:0}}
+.seat.guide{background:#F59E0B!important;border-color:#B45309;z-index:3;box-shadow:0 0 0 3px rgba(245,158,11,.4)}
+.guidecard{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}
+.guidecard .gsw{width:14px;height:14px;border-radius:4px;background:#F59E0B;flex:none}
+.guidecard div{flex:1 1 220px;font-size:.8rem;font-weight:600}
+.guidecard p{margin:2px 0 0;color:var(--muted)}
+:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:6px}
+.btn:active,.zone:active,.ev:active{transform:scale(.98)}
+.modal{border-radius:22px}
+.modal-acts{flex-wrap:wrap}
+.modal-acts .btn{flex:1 1 130px}
+.qr-box{box-shadow:0 0 0 6px var(--surface-2),var(--shadow)}
+.tid{background:var(--surface-2);border:1px dashed var(--line);padding:6px 14px;border-radius:99px}
+.ticket .top{background-image:radial-gradient(circle at 100% 0,rgba(255,255,255,.22),transparent 55%),linear-gradient(135deg,var(--blue-600),var(--purple))}
+.tray-in{backdrop-filter:blur(10px)}
+.toast{bottom:calc(max(20px,env(safe-area-inset-bottom)) + 4px);z-index:130}
+.seat{cursor:pointer}
+.ev,.zone,.stat,.ticket,.plan{will-change:transform}
+@media (max-width:560px){.hero-facts{gap:16px 22px}.modal{padding:20px}.tray-in{gap:10px}.tray-in .btn{flex:1}}
+.phase{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;padding:11px 15px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface);font-size:.8rem;font-weight:700;box-shadow:var(--shadow)}
+.phase b{font-variant-numeric:tabular-nums;color:var(--purple)}
+.phase.open{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.ann{margin-top:18px;display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-radius:var(--r-sm);background:var(--warn-bg);color:var(--warn);font-size:.84rem;font-weight:700;border:1px solid color-mix(in srgb,var(--warn) 30%,transparent)}
+.findbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.findbar select{padding:8px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:.8rem}
+.scanbox{width:100%;aspect-ratio:1/1;border-radius:var(--r);background:#000;object-fit:cover;margin-top:14px}
 .page{display:none}
 .page.active{display:block}
 
@@ -203,7 +243,7 @@ h1.title span{background:linear-gradient(120deg,var(--blue-600),var(--purple));-
 .row-kv{display:flex;justify-content:space-between;gap:12px;font-size:.79rem}
 .row-kv span{color:var(--muted);font-weight:600}
 .row-kv b{font-weight:700;text-align:right;word-break:break-word}
-.ticket .acts{display:flex;gap:8px;padding:0 16px 16px}
+.ticket .acts{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 16px}
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:32px 20px;text-align:center;color:var(--muted);font-size:.87rem;font-weight:600;background:var(--surface-2)}
 
 /* PLANS */
@@ -293,6 +333,7 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
       <a href="#plans">Plans</a>
       <a href="#profile" id="navProfile" class="hide">Profile</a>
     </nav>
+    <button class="icon-btn" id="langBtn" aria-label="Language" style="width:auto;padding:0 11px;font-weight:800;font-size:.74rem">EN</button>
     <button class="icon-btn" id="themeBtn" aria-label="Switch theme">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
     </button>
@@ -305,11 +346,13 @@ footer{border-top:1px solid var(--line);padding-block:30px;margin-top:16px}
 </nav>
 
 <section class="hero page active" id="home">
+  <div class="wrap" id="annSlot"></div>
   <div class="wrap hero-in">
     <div>
       <div class="pill"><i class="dot"></i><span id="liveLabel">Connecting to the live seat map…</span></div>
-      <h1 class="title">Skip the line.<br><span>Book your chapel seat online.</span></h1>
+      <h1 class="title"><i style="font-style:normal">Skip the line.</i><br><span>Book your chapel seat online.</span></h1>
       <p class="lead">TicketVerse gives MCGI Chapel one secure place to reserve a seat before you arrive: pick your exact seat on a live floor plan, confirm in seconds, and walk in with a QR code on your phone. Chapel admission is always free.</p>
+      <div class="phase" id="phaseBar"></div>
       <div class="cta">
         <a class="btn btn-primary" href="#booking">Choose my seat</a>
         <button class="btn btn-ghost" data-act="create-event">Create your own event and seats</button>
@@ -793,10 +836,12 @@ function renderSeats(){
    +'<div style="margin-right:auto"><h3 style="font-size:1rem">'+esc(z.name)+'</h3>'
    +'<p class="lead" style="font-size:.79rem;margin-top:2px">'+fmt(cap-tk)+' available · '+fmt(tk)+' unavailable · '+fmt(cap)+' seats · '
    +(e.kind==='chapel'?'FREE':(z.premRows?'front '+z.premRows+' rows '+peso(z.premPrice||0)+', rest '+peso(z.price||0):peso(z.price||0)+' per seat'))+'</p></div>'
-   +'<button class="btn btn-ghost btn-sm" id="clearSel">Clear selection</button></div>'
+   +'<div class="findbar"><select id="grpN" aria-label="Group size"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select>'
+   +'<button class="btn btn-primary btn-sm" id="findTog">Seat us together</button>'
+   +'<button class="btn btn-ghost btn-sm" id="clearSel">Clear selection</button></div></div>'
    +'<div class="legend"><span><i class="swatch sw-free"></i>Available</span><span><i class="swatch sw-sel"></i>Selected</span>'
    +'<span><i class="swatch sw-taken"></i>Unavailable</span><span><i class="swatch sw-mine"></i>Yours</span></div>'
-   +'<div class="seatbox"><div class="seat-rows">';
+   +guideCardHTML(z)+'<div class="seatbox"><div class="seat-rows">';
   for(var r=0;r<z.rows;r++){
     var L=rowLabel(r);
     h+='<div class="srow"><div class="rlab">'+L+'</div>';
@@ -805,6 +850,7 @@ function renderSeats(){
       if(z.premRows&&r<z.premRows)cls+=' prem';
       if(owner)cls+= ids[owner]?' mine':' taken'; else if(selKeys[key])cls+=' sel';
       if(z.aisle&&c%z.aisle===0&&c!==z.cols)cls+=' aisle';
+      if(guideOn(z)&&guide.keys.indexOf(key)>=0)cls+=' guide';
       var pr=seatPrice(e,z,r), st=owner?(ids[owner]?'your seat':'unavailable'):'available — '+(pr?peso(pr):'FREE');
       h+='<button class="'+cls+'" data-k="'+key+'" data-r="'+r+'" title="Row '+L+' seat '+c+' — '+st+'" aria-label="Row '+L+' seat '+c+', '+st+'"></button>';
     }
@@ -813,6 +859,9 @@ function renderSeats(){
   h+='</div></div><div class="scroll-hint">Swipe sideways inside the map to see every seat in the row.</div></div>';
   host.innerHTML=h;
   $('clearSel').onclick=clearSel;
+  $('findTog').onclick=findTogether;
+  if($('hideGuide'))$('hideGuide').onclick=function(){guide=null;renderSeats()};
+  drawGuide();
 }
 function clearSel(){selected=[];renderSeats();renderTray()}
 function renderTray(){
@@ -848,7 +897,7 @@ function renderTickets(){
      +'<div class="row-kv"><span>Price</span><b style="color:'+(t.amount?'var(--text)':'var(--ok)')+'">'+(t.amount?peso(t.amount):'FREE')+'</b></div>'
      +'<div style="margin-top:2px">'+statusBadge(t)+'</div></div>'
      +'<div class="acts">'+(t.status==='active'
-        ?'<button class="btn btn-primary btn-sm" data-qr="'+esc(t.id)+'" style="flex:1">View QR</button><button class="btn btn-ghost btn-sm" data-rel="'+esc(t.id)+'">Release</button>'
+        ?'<button class="btn btn-primary btn-sm" data-qr="'+esc(t.id)+'" style="flex:1">View QR</button><button class="btn btn-ghost btn-sm" data-guide="'+esc(t.id)+'">Seat guide</button><button class="btn btn-ghost btn-sm" data-rel="'+esc(t.id)+'">Release</button>'
         :'<button class="btn btn-ghost btn-sm" data-qr="'+esc(t.id)+'" style="flex:1">View details</button>')
      +'</div></div>';
   });
@@ -902,7 +951,7 @@ function renderProfile(){
     h+='<div class="panel" style="margin-top:14px"><div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">'
      +'<div style="margin-right:auto"><h3 style="font-size:1rem">MCGI Chapel administration</h3>'
      +'<p class="lead" style="font-size:.8rem;margin-top:2px">Create, edit, reset and check in chapel events.</p></div>'
-     +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="manageAdmins">Manage admins</button>'
+     +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="postAnn">Announcement</button><button class="btn btn-ghost btn-sm" id="manageAdmins">Manage admins</button>'
      +'<button class="btn btn-primary btn-sm" id="newChapelEvent2">+ New chapel event</button></div></div><div class="ev-grid" style="margin-top:16px">';
     chapelEvents.forEach(function(e){
       h+='<div class="ev"><div class="tag-row"><span class="badge '+(e.status==='ended'?'bad':'ok')+'">'+(e.status==='ended'?'ENDED':'OPEN')+'</span>'
@@ -917,6 +966,7 @@ function renderProfile(){
   if($('signOutBtn'))$('signOutBtn').onclick=function(){signOut()};
   if($('newChapelEvent2'))$('newChapelEvent2').onclick=function(){openBuilder('chapel')};
   if($('manageAdmins'))$('manageAdmins').onclick=openAdmins;
+  if($('postAnn'))$('postAnn').onclick=openAnn;
 }
 function openAdmins(){
   if(!isAdmin())return;
@@ -1026,14 +1076,16 @@ function openPayment(opts){
 
 /* ============ BOOKING ============ */
 function openBooking(){
-  if(!me){openAuth();return}
+  var e=curEv();
+  if(!canBook(e)){toast(T('locked'));return}
+  if(!me&&!guestOK(e)){openAuth();return}
   if(!selected.length)return;
-  var e=curEv(),z=zoneOf(e,selected[0].zone);
+  var z=zoneOf(e,selected[0].zone);
   var total=selected.reduce(function(a,s){return a+s.price},0);
   openModal('<h3>Confirm your reservation</h3><p class="sub">'+esc(e.name)+' · '+esc(z.name)+'</p>'
    +'<div class="seat-list">'+selected.map(function(s){return '<code>'+esc(s.key)+(s.price?' · '+peso(s.price):'')+'</code>'}).join('')+'</div>'
-   +'<label class="field"><span>Ticket holder</span><input id="bkName" value="'+esc(me.name)+'"></label>'
-   +'<label class="field"><span>Contact</span><input id="bkMail" value="'+esc(me.handle)+'"></label>'
+   +'<label class="field"><span>Ticket holder</span><input id="bkName" value="'+esc(U().name)+'"></label>'
+   +'<label class="field"><span>Contact</span><input id="bkMail" value="'+esc(U().handle)+'"></label>'
    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:13px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line)">'
    +'<span style="font-size:.82rem;font-weight:700">'+selected.length+' seat(s)</span>'
    +'<span class="'+(total?'price-tag':'free-tag')+'">'+(total?peso(total):'FREE')+'</span></div>'
@@ -1054,7 +1106,7 @@ function doBooking(name,contact,total){
     selected=selected.filter(function(s){return !taken(s.zone,s.key)}); closeModal(); renderSeats(); renderTray(); return; }
   var id='TV-'+rid(6),keys=selected.map(function(s){return s.key});
   var t={id:id,eventId:e.id,eventName:e.name,venue:e.venue,zone:zcode,zoneName:z.name,keys:keys,
-    uid:me.uid,name:name,contact:contact,amount:total,status:'active',attended:false,createdAt:now()};
+    uid:U().uid,name:name,contact:contact,amount:total,status:'active',attended:false,createdAt:now()};
   var patch={};keys.forEach(function(k){patch[k]=id});
   openModal('<h3 style="text-align:center">Reserving your seats…</h3><div class="spinner"></div>');
   Store.merge('events/'+e.id+'/seats/'+zcode,{seats:patch}).then(function(){
@@ -1077,7 +1129,10 @@ function showTicket(t,fresh){
    +'<div class="row-kv"><span>Amount</span><b style="color:'+(t.amount?'var(--text)':'var(--ok)')+'">'+(t.amount?peso(t.amount):'₱0.00 · FREE')+'</b></div>'
    +'<div class="row-kv"><span>Status</span><b>'+statusBadge(t)+'</b></div></div>'
    +'<div class="note">If you do not check in by '+(e&&e.grace?e.grace:20)+' minutes after the event starts, the organizer can release your seats to other visitors.</div>'
-   +'<div class="modal-acts"><button class="btn btn-primary btn-block" data-close>Done</button></div>');
+   +'<div class="modal-acts" style="flex-wrap:wrap">'+(t.status==='active'?'<button class="btn btn-primary" id="guideTk">Show seat guide</button>':'')+'<button class="btn btn-ghost" id="dlTk">Save as image</button><button class="btn btn-ghost" id="pdfTk">Save as PDF</button>'
+   +(t.eventId==='chapel-main'?'<button class="btn btn-ghost" id="calTk">Add to calendar</button>':'')
+   +'<button class="btn btn-ghost" data-close>Done</button></div>');
+  bindTicketActs(t);
   drawQR($('qrHost'),'TICKETVERSE|'+t.id+'|'+t.eventId+'|'+t.zone+'|'+t.keys.join(',')+'|'+t.name);
 }
 function releaseTicket(id){
@@ -1229,6 +1284,8 @@ function openManage(id){
      +'<div class="note">No-show rule: '+(e.grace||20)+' minutes after the event starts, any ticket that has not been checked in can be released so the seats become occupiable again.</div>'
      +'<div style="display:grid;gap:10px;margin-top:16px">'
      +'<button class="btn btn-ghost" id="mgEdit">Edit event details & prices</button>'
+     +'<button class="btn btn-ghost" id="mgScan">Scan ticket QR with camera</button>'
+     +'<button class="btn btn-ghost" id="mgCsv">Export attendance (CSV)</button>'
      +'<button class="btn btn-ghost" id="mgNoshow"'+(noshow.length?'':' disabled')+'>Release '+noshow.length+' no-show ticket(s)</button>'
      +'<button class="btn btn-ghost" id="mgReset">Reset all booked seats</button>'
      +'<button class="btn btn-danger" id="mgEnd">'+(e.status==='ended'?'Reopen event':'End event & reset seats')+'</button>'
@@ -1242,6 +1299,8 @@ function openManage(id){
       Store.merge('tickets/'+t.id,{attended:true}).then(function(){toast('Checked in: '+t.name+' · '+t.keys.join(', '));openManage(id)});
     };
     $('mgEdit').onclick=function(){openBuilder(e.kind,id)};
+    $('mgCsv').onclick=function(){exportCsv(e,tks)};
+    $('mgScan').onclick=function(){scanQR(function(code){checkinCode(tks,code,id)})};
     $('mgNoshow').onclick=function(){
       openModal('<h3>Release no-show seats?</h3><p class="sub">'+noshow.length+' ticket(s) have not been checked in. Their seats will be freed immediately and the ticket marked as a no-show.</p>'
        +'<div class="modal-acts"><button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-danger" id="nsYes">Release seats</button></div>');
@@ -1315,17 +1374,20 @@ document.addEventListener('click',function(ev0){
   var mg=t.closest('[data-manage]');if(mg){openManage(mg.dataset.manage);return}
   var pl=t.closest('[data-plan]');if(pl){closeModal();choosePlan(pl.dataset.plan);return}
   var qr=t.closest('[data-qr]');if(qr){var tk=null;myTickets.forEach(function(x){if(x.id===qr.dataset.qr)tk=x});if(tk)showTicket(tk,false);return}
+  var gd=t.closest('[data-guide]');if(gd){myTickets.forEach(function(x){if(x.id===gd.dataset.guide)showGuide(x)});return}
   var rl=t.closest('[data-rel]');if(rl){releaseTicket(rl.dataset.rel);return}
   var zn=t.closest('[data-zone]');if(zn){
     var wasOpen=currentZone===zn.dataset.zone;
-    currentZone=wasOpen?null:zn.dataset.zone; selected=[]; renderMap(); renderTray();
+    currentZone=wasOpen?null:zn.dataset.zone; selected=[];guide=null; renderMap(); renderTray();
     if(!wasOpen) setTimeout(function(){var p=$('seatPanel');if(p)p.scrollIntoView({behavior:'smooth',block:'start'})},60);
     return}
   var st=t.closest('.seat');if(st){
     var e=curEv(),z=zoneOf(e,currentZone);
     if(e.status==='ended'){toast('This event has ended.');return}
-    if(!me){openAuth();return}
+    if(!canBook(e)){toast(T('locked'));return}
+    if(!me&&!guestOK(e)){openAuth();return}
     var key=st.dataset.k,rowIdx=+st.dataset.r;
+    if(mine(currentZone,key)){var oid=seatMap(currentZone)[key];myTickets.forEach(function(x){if(x.id===oid)showGuide(x)});return}
     if(taken(currentZone,key)){toast('That seat is already taken.');return}
     var idx=-1;selected.forEach(function(s,i){if(s.zone===currentZone&&s.key===key)idx=i});
     if(idx>=0){selected.splice(idx,1);st.classList.remove('sel')}
@@ -1352,6 +1414,281 @@ $('loginBtn').onclick=openAuth;
 var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
 document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
 
+/* ============ SCHEDULE / GUEST / SEATING ============ */
+function U(){return me||{name:'',handle:'',uid:'guest'}}
+function manila(){return new Date(Date.now()+8*3600000)}
+function phase(){
+  var m=manila(),day=m.getUTCDay(),mins=m.getUTCHours()*60+m.getUTCMinutes(),sec=m.getUTCSeconds()*1000;
+  if(day===6){
+    if(mins>=900)return {p:'open'};
+    if(mins>=720)return {p:'reserve',ms:(900-mins)*60000-sec};
+  }
+  var days=(6-day+7)%7;
+  var ms=(days*1440+720-mins)*60000-sec; if(ms<=0)ms+=7*864e5;
+  return {p:'before',ms:ms};
+}
+function canBook(e){return !e||e.kind!=='chapel'||isAdmin()||phase().p!=='before'}
+function guestOK(e){return !!e&&e.kind==='chapel'&&phase().p==='open'}
+function pad2(n){return (n<10?'0':'')+n}
+function cd(ms){var s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),mi=Math.floor(s%3600/60);
+  return (d?d+(lang==='tl'?'a ':'d '):'')+pad2(h)+':'+pad2(mi)+':'+pad2(s%60)}
+function updatePhase(){
+  var el=$('phaseBar');if(!el)return;var f=phase();
+  el.className='phase'+(f.p==='open'?' open':'');
+  el.innerHTML = f.p==='before' ? '<span class="badge none">'+T('closed')+'</span><span>'+T('opensIn')+' <b>'+cd(f.ms)+'</b></span>'
+    : f.p==='reserve' ? '<span class="badge ok">'+T('resOpen')+'</span><span>'+T('everyoneIn')+' <b>'+cd(f.ms)+'</b></span>'
+    : '<span class="badge ok">'+T('openSeat')+'</span><span>'+T('openSeatTxt')+'</span>';
+}
+function findTogether(){
+  var e=curEv(),z=currentZone?zoneOf(e,currentZone):null;if(!z)return;
+  if(!canBook(e)){toast(T('locked'));return}
+  if(!me&&!guestOK(e)){openAuth();return}
+  var n=+$('grpN').value,map=seatMap(z.code);
+  for(var r=0;r<z.rows;r++){
+    var L=rowLabel(r);
+    for(var c=1;c+n-1<=z.cols;c++){
+      if(z.aisle&&Math.floor((c-1)/z.aisle)!==Math.floor((c+n-2)/z.aisle))continue;
+      var ok=true;
+      for(var k=0;k<n;k++){if(map[L+(c+k)]){ok=false;break}}
+      if(ok){selected=[];for(var j=0;j<n;j++)selected.push({zone:z.code,key:L+(c+j),price:seatPrice(e,z,r)});
+        renderSeats();renderTray();toast(n+' '+T('foundTog')+' '+L+c+'–'+L+(c+n-1));return}
+    }
+  }
+  toast(T('noTog'));
+}
+
+/* ============ TICKET EXTRAS ============ */
+function saveBlob(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}
+function pdfFromCanvas(cv){
+  var bin=atob(cv.toDataURL('image/jpeg',0.92).split(',')[1]),n=bin.length,img=new Uint8Array(n),i;
+  for(i=0;i<n;i++)img[i]=bin.charCodeAt(i);
+  var enc=new TextEncoder(),parts=[],off=[],len=0;
+  function add(x){var u=typeof x==='string'?enc.encode(x):x;parts.push(u);len+=u.length}
+  function obj(k,b){off[k]=len;add(k+' 0 obj\n'+b+'\nendobj\n')}
+  var w=cv.width,h=cv.height,c='q '+w+' 0 0 '+h+' 0 0 cm /I Do Q';
+  add('%PDF-1.4\n');
+  obj(1,'<</Type/Catalog/Pages 2 0 R>>');
+  obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+  obj(3,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 '+w+' '+h+']/Resources<</XObject<</I 4 0 R>>>>/Contents 5 0 R>>');
+  off[4]=len;add('4 0 obj\n<</Type/XObject/Subtype/Image/Width '+w+'/Height '+h+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+n+'>>\nstream\n');add(img);add('\nendstream\nendobj\n');
+  obj(5,'<</Length '+c.length+'>>\nstream\n'+c+'\nendstream');
+  var x=len,t='xref\n0 6\n0000000000 65535 f \n';
+  for(i=1;i<=5;i++)t+=('0000000000'+off[i]).slice(-10)+' 00000 n \n';
+  add(t+'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n'+x+'\n%%EOF');
+  return new Blob(parts,{type:'application/pdf'});
+}
+function bindTicketActs(t){
+  if($('guideTk'))$('guideTk').onclick=function(){closeModal();showGuide(t)};
+  function mk(){
+    var cv=document.createElement('canvas');cv.width=720;cv.height=400;var x=cv.getContext('2d');
+    var g=x.createLinearGradient(0,0,720,400);g.addColorStop(0,'#2563EB');g.addColorStop(1,'#7C3AED');
+    x.fillStyle='#fff';x.fillRect(0,0,720,400);x.fillStyle=g;x.fillRect(0,0,720,92);
+    x.fillStyle='#fff';x.font='700 28px Montserrat,Arial,sans-serif';x.fillText('TicketVerse · MCGI Chapel',32,56);
+    x.fillStyle='#101426';x.font='700 24px Montserrat,Arial,sans-serif';x.fillText(String(t.eventName).slice(0,30),32,148);
+    x.font='600 18px Montserrat,Arial,sans-serif';x.fillStyle='#5A6079';
+    [['Name',t.name],['Section',t.zoneName||t.zone],['Seats',t.keys.join(', ').slice(0,34)],['Ticket',t.id],['Price',t.amount?peso(t.amount):'FREE']]
+      .forEach(function(r,i){x.fillText(r[0]+':  '+r[1],32,196+i*34)});
+    var q=$('qrHost').querySelector('canvas');
+    if(q)x.drawImage(q,500,130,190,190);
+    x.fillStyle='#5A6079';x.font='600 14px Montserrat,Arial,sans-serif';x.fillText('Show this QR code at the entrance',476,352);
+    return cv;
+  }
+  $('dlTk').onclick=function(){mk().toBlob(function(b){saveBlob(b,'TicketVerse-'+t.id+'.png')})};
+  $('pdfTk').onclick=function(){saveBlob(pdfFromCanvas(mk()),'TicketVerse-'+t.id+'.pdf')};
+  if($('calTk'))$('calTk').onclick=function(){
+    var m=manila(),day=m.getUTCDay(),mins=m.getUTCHours()*60+m.getUTCMinutes(),add=(6-day+7)%7;
+    if(add===0&&mins>=900)add=7;
+    var d=new Date(m.getTime()+add*864e5),ds=d.getUTCFullYear()+pad2(d.getUTCMonth()+1)+pad2(d.getUTCDate());
+    var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//TicketVerse//EN','BEGIN:VEVENT','UID:'+t.id+'@ticketverse',
+      'DTSTAMP:'+new Date().toISOString().replace(/[-:]|\.\d+/g,''),'DTSTART;TZID=Asia/Manila:'+ds+'T120000','DTEND;TZID=Asia/Manila:'+ds+'T160000',
+      'SUMMARY:'+t.eventName+' (MCGI Chapel)','LOCATION:MCGI Chapel','DESCRIPTION:Seats '+t.keys.join(', ')+' · Ticket '+t.id,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+    saveBlob(new Blob([ics],{type:'text/calendar'}),'TicketVerse-'+t.id+'.ics');
+  };
+}
+
+/* ============ STAFF TOOLS ============ */
+function exportCsv(e,tks){
+  var q=function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'};
+  var rows=[['Ticket','Name','Contact','Section','Seats','Status','Checked in','Booked at']];
+  tks.forEach(function(t){rows.push([t.id,t.name,t.contact,t.zoneName||t.zone,t.keys.join(' '),t.status,t.attended?'Yes':'No',new Date(t.createdAt).toISOString()])});
+  saveBlob(new Blob(['\ufeff'+rows.map(function(r){return r.map(q).join(',')}).join('\r\n')],{type:'text/csv'}),'attendance-'+e.id+'.csv');
+  toast(T('csvDone'));
+}
+function checkinCode(tks,code,id){
+  var t=null;tks.forEach(function(x){if(x.id===code)t=x});
+  if(!t){toast(T('noTicket'));return}
+  if(t.status!=='active'){toast(t.status);return}
+  Store.merge('tickets/'+t.id,{attended:true}).then(function(){toast('✓ '+t.name+' · '+t.keys.join(', '));openManage(id)});
+}
+function scanQR(cb){
+  if(!('BarcodeDetector' in window)||!navigator.mediaDevices){toast(T('noScan'));return}
+  var stream=null,stop=false,det=new BarcodeDetector({formats:['qr_code']});
+  openModal('<h3>'+T('scanTitle')+'</h3><p class="sub">'+T('scanSub')+'</p><video class="scanbox" id="scanV" playsinline muted></video>'
+    +'<div class="modal-acts"><button class="btn btn-ghost btn-block" id="scanX">'+T('cancel')+'</button></div>');
+  function end(){stop=true;if(stream)stream.getTracks().forEach(function(t){t.stop()})}
+  $('scanX').onclick=function(){end();closeModal()};
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(st){
+    stream=st;var v=$('scanV');v.srcObject=st;v.play();
+    (function loop(){ if(stop)return;
+      det.detect(v).then(function(r){
+        if(r&&r.length){var m=String(r[0].rawValue).split('|');if(m[0]==='TICKETVERSE'&&m[1]){end();closeModal();cb(m[1]);return}}
+        setTimeout(loop,250);
+      }).catch(function(){setTimeout(loop,400)});
+    })();
+  }).catch(function(){end();closeModal();toast(T('noCam'))});
+}
+
+/* ============ ANNOUNCEMENTS ============ */
+function renderAnn(d){
+  var el=$('annSlot');if(!el)return;
+  el.innerHTML=(d&&d.text)?'<div class="ann"><span class="badge admin">'+T('notice')+'</span><span>'+esc(d.text)+'</span></div>':'';
+}
+function openAnn(){
+  if(!isAdmin())return;
+  Store.getDoc('meta/announcement').then(function(d){
+    openModal('<h3>'+T('annTitle')+'</h3><p class="sub">'+T('annSub')+'</p>'
+      +'<label class="field"><span>'+T('annMsg')+'</span><input id="annTxt" maxlength="160" value="'+esc(d&&d.text||'')+'" placeholder="Service moved to 4:00 PM"></label>'
+      +'<div class="modal-acts"><button class="btn btn-ghost" id="annClr">'+T('annClear')+'</button><button class="btn btn-primary" id="annGo">'+T('annPost')+'</button></div>');
+    $('annGo').onclick=function(){Store.set('meta/announcement',{text:($('annTxt').value||'').trim(),at:now()}).then(function(){closeModal();toast(T('annDone'))})};
+    $('annClr').onclick=function(){Store.set('meta/announcement',{text:'',at:now()}).then(function(){closeModal()})};
+  });
+}
+
+/* ============ LANGUAGE (English / Tagalog) ============ */
+var lang='en',LSL='tv_lang_v1';
+try{lang=localStorage.getItem(LSL)||'en'}catch(e){}
+var TL={
+ 'Home':'Tahanan','Dashboard':'Dashboard','Seat map':'Mapa ng upuan','My tickets':'Aking mga tiket','Plans':'Mga plano','Profile':'Profile',
+ 'Log in / Sign up':'Mag-log in / Mag-sign up','Choose my seat':'Pumili ng upuan','Create your own event and seats':'Gumawa ng sariling event at upuan',
+ 'Book your chapel seat online.':'I-book online ang iyong upuan sa kapilya.','Skip the line.':'Iwas pila.',
+ 'TicketVerse gives MCGI Chapel one secure place to reserve a seat before you arrive: pick your exact seat on a live floor plan, confirm in seconds, and walk in with a QR code on your phone. Chapel admission is always free.':'Ang TicketVerse ay iisang ligtas na lugar para magpareserba ng upuan sa MCGI Chapel bago ka dumating: piliin ang eksaktong upuan sa live na mapa, kumpirmahin sa ilang segundo, at pumasok gamit ang QR code sa iyong telepono. Libre palagi ang pagpasok sa kapilya.',
+ 'Chapel seats':'Upuan sa kapilya','Available now':'Bakante ngayon','Chapel entry':'Bayad sa pagpasok','Live events':'Mga live na event',
+ "What's on":'Mga kaganapan','Events you can book':'Mga event na maaari mong i-book',
+ 'Pick an event to open its live seat map. Chapel services are free; community events are run by TicketVerse subscribers.':'Pumili ng event para makita ang live na mapa ng upuan. Libre ang mga pagsamba sa kapilya; ang mga event ng komunidad ay pinapatakbo ng mga subscriber ng TicketVerse.',
+ 'Open seat map':'Buksan ang mapa','Viewing':'Tinitingnan','Manage':'Ayusin','Interactive seat map':'Interactive na mapa ng upuan','Pick the exact seat you want':'Piliin ang eksaktong upuan mo',
+ 'Choose a section, then tap any open seat. Grey is free, red is taken, green is already yours. Up to 6 seats per booking.':'Pumili ng seksyon, saka pindutin ang anumang bakanteng upuan. Abo ay bakante, pula ay kuha na, berde ay sa iyo na. Hanggang 6 na upuan bawat booking.',
+ 'Live booking history':'Live na kasaysayan ng booking','Tickets appear here the instant a booking is confirmed, on any device you are signed in to.':'Lumalabas dito ang tiket sa sandaling makumpirma ang booking, sa anumang device na naka-sign in ka.',
+ 'Available':'Bakante','Selected':'Napili','Unavailable':'Hindi available','Yours':'Sa iyo',
+ 'Seat us together':'Magkatabing upuan','Clear selection':'I-clear ang pinili','Clear':'I-clear','Book seats':'I-book ang upuan','Cancel':'Kanselahin','Confirm booking':'Kumpirmahin ang booking',
+ 'View QR':'Tingnan ang QR','Release':'Bitawan','Done':'Tapos na','Sign out':'Mag-sign out','Save as image':'I-save bilang larawan','Save as PDF':'I-save bilang PDF','Add to calendar':'Idagdag sa kalendaryo',
+ 'Your account':'Iyong account','Live dashboard':'Live na dashboard','For organizers':'Para sa mga organizer','Build your own seat plan':'Gumawa ng sariling plano ng upuan',
+ 'Total seats':'Kabuuang upuan','Unavailable ':'Hindi available','Your reserved seats':'Iyong mga nakareserba','Section breakdown':'Hati ayon sa seksyon','My seat plans':'Aking mga plano ng upuan',
+ 'Subscribe':'Mag-subscribe','Current plan':'Kasalukuyang plano','Most popular':'Pinakasikat','MOST POPULAR':'PINAKASIKAT','Announcement':'Anunsyo','Manage admins':'Ayusin ang mga admin','Show seat guide':'Ipakita ang gabay','Seat guide':'Gabay sa upuan','Hide guide':'Itago ang gabay'
+};
+var MSG={
+ en:{locked:'Reservations open Saturday at 12:00 NN.',closed:'Reservations closed',opensIn:'Reservations open in',resOpen:'Reservations open',everyoneIn:'Open to everyone in',openSeat:'Open seating',
+  openSeatTxt:'Any free seat can be taken by anyone — no account needed.',foundTog:'seats together:',noTog:'No group of that size is free in this section. Try another.',csvDone:'Attendance exported.',
+  noTicket:'No ticket with that number for this event.',noScan:'Camera scanning needs Chrome or Edge. Type the ticket number instead.',noCam:'Could not open the camera. Check permissions.',
+  scanTitle:'Scan ticket',scanSub:'Point the camera at the ticket QR code.',cancel:'Cancel',notice:'Notice',annTitle:'Announcement',annSub:'Shown at the top of the home page for everyone.',
+  annMsg:'Message',annClear:'Remove',annPost:'Publish',annDone:'Announcement published.',guideTitle:'Seat guide',entrance:'MAIN ENTRANCE',secEntry:'SECTION ENTRY',planCap:'Floor plan: from the main entrance to {z}',aisleN:'aisle {g}',edgeL:'the left edge',dirL:'left',dirR:'right',noEvent:'That event is no longer available.',
+  guideTxt:'Enter at the front of {z} and walk down {a}. At row {r}, turn {d} and count {n} seat(s) to {k}.'},
+ tl:{locked:'Bukas ang reserbasyon tuwing Sabado, 12:00 NN.',closed:'Sarado ang reserbasyon',opensIn:'Magbubukas ang reserbasyon sa',resOpen:'Bukas ang reserbasyon',everyoneIn:'Bukas sa lahat sa loob ng',openSeat:'Bukas na upuan',
+  openSeatTxt:'Kahit sino ay maaaring kumuha ng bakanteng upuan — hindi kailangan ng account.',foundTog:'magkatabing upuan:',noTog:'Walang bakanteng grupo na ganoong laki sa seksyong ito. Subukan ang iba.',csvDone:'Na-export ang attendance.',
+  noTicket:'Walang tiket na may ganoong numero sa event na ito.',noScan:'Kailangan ng Chrome o Edge para sa pag-scan. I-type na lang ang numero ng tiket.',noCam:'Hindi mabuksan ang camera. Tingnan ang permiso.',
+  scanTitle:'I-scan ang tiket',scanSub:'Itutok ang camera sa QR code ng tiket.',cancel:'Kanselahin',notice:'Paunawa',annTitle:'Anunsyo',annSub:'Makikita sa itaas ng home page ng lahat.',
+  annMsg:'Mensahe',annClear:'Alisin',annPost:'I-publish',annDone:'Na-publish ang anunsyo.',guideTitle:'Gabay sa upuan',entrance:'PANGUNAHING PASUKAN',secEntry:'PASUKAN NG SEKSYON',planCap:'Mapa ng palapag: mula sa pangunahing pasukan hanggang {z}',aisleN:'pasilyo {g}',edgeL:'kaliwang gilid',dirL:'kaliwa',dirR:'kanan',noEvent:'Wala na ang event na iyon.',
+  guideTxt:'Pumasok sa harap ng {z} at maglakad sa {a}. Sa hilera {r}, lumiko sa {d} at bilangin ang {n} upuan hanggang {k}.'}
+};
+function T(k){return (MSG[lang]&&MSG[lang][k])||MSG.en[k]||k}
+var trBusy=false;
+function applyLang(){
+  if(trBusy)return;trBusy=true;
+  var all=document.body.querySelectorAll('*');
+  for(var i=0;i<all.length;i++){var el=all[i];
+    if(el.children.length||el.tagName==='SCRIPT'||el.tagName==='STYLE')continue;
+    var tx=el.textContent.trim();
+    if(lang==='tl'&&TL[tx]&&!el.dataset.en){el.dataset.en=tx;el.textContent=TL[tx]}
+    else if(lang==='en'&&el.dataset.en){el.textContent=el.dataset.en;delete el.dataset.en}
+  }
+  document.documentElement.lang=lang==='tl'?'fil':'en';
+  var b=$('langBtn');if(b)b.textContent=lang==='tl'?'TL':'EN';
+  trBusy=false;
+}
+var trT=null;
+new MutationObserver(function(){if(lang!=='tl'||trBusy)return;clearTimeout(trT);trT=setTimeout(applyLang,60)}).observe(document.body,{childList:true,subtree:true,characterData:true});
+$('langBtn').onclick=function(){lang=lang==='tl'?'en':'tl';try{localStorage.setItem(LSL,lang)}catch(e){}applyLang();updatePhase();toast(lang==='tl'?'Wika: Tagalog':'Language: English')};
+
+/* ============ SEAT GUIDE ============ */
+var guide=null;
+function guideOn(z){return !!guide&&guide.event===currentEvent&&guide.zone===z.code}
+function guideInfo(z,key){
+  var m=/^([A-Z]+)(\d+)$/.exec(key);if(!m)return null;
+  var c=+m[2],A=z.aisle||0,G=A?Math.floor((z.cols-1)/A):0,bg=0,bn=1e9;
+  for(var g=0;g<=G;g++){var n=c>g*A?c-g*A:g*A-c+1;if(n<bn){bn=n;bg=g}}
+  return {row:m[1],c:c,A:A,g:bg,n:bn,right:c>bg*A};
+}
+function guideCardHTML(z){
+  if(!guideOn(z))return '';var i=guideInfo(z,guide.keys[0]);if(!i)return '';
+  var txt=T('guideTxt').replace('{z}',z.name).replace('{a}',i.g?T('aisleN').replace('{g}',i.g):T('edgeL'))
+    .replace('{r}',i.row).replace('{d}',i.right?T('dirR'):T('dirL')).replace('{n}',i.n).replace('{k}',i.row+i.c);
+  return '<div class="guidecard"><span class="gsw"></span><div><b>'+esc(T('guideTitle'))+' · '+esc(guide.keys.join(', '))+'</b><p>'+esc(txt)+'</p></div>'
+    +'<button class="btn btn-ghost btn-sm" id="hideGuide">Hide guide</button>'
+    +'<div class="gplan"><small>'+esc(T('planCap').replace('{z}',z.name))+'</small>'+floorPlan(curEv(),z)+'</div></div>';
+}
+function floorPlan(e,z){
+  if(!e)return '';
+  var W=420,mx=14,gap=10,rowH=44,rowGap=18,top=42,idx={},tiers=[],rows=[];
+  e.zones.forEach(function(q){var t=q.tier||'Seating';if(idx[t]==null){idx[t]=tiers.length;tiers.push([])}tiers[idx[t]].push(q)});
+  tiers.forEach(function(arr){for(var i=0;i<arr.length;i+=4)rows.push(arr.slice(i,i+4))});
+  var bottom=top+rows.length*rowH+(rows.length-1)*rowGap,H=bottom+62,cx=W/2,tg=null,blocks='';
+  rows.forEach(function(arr,ri){
+    var y=top+ri*(rowH+rowGap),usable=W-2*mx-gap*(arr.length-1),tc=0,x=mx;
+    arr.forEach(function(q){tc+=q.cols||1});
+    arr.forEach(function(q,j){
+      var w=usable*(q.cols||1)/tc,on=q.code===z.code;
+      if(on)tg={x:x,y:y,w:w,gl:x-(j?gap/2:mx/2),gr:x+w+(j<arr.length-1?gap/2:mx/2)};
+      blocks+='<rect class="gblk'+(on?' on':'')+'" x="'+x.toFixed(1)+'" y="'+y+'" width="'+w.toFixed(1)+'" height="'+rowH+'" rx="8"/>'
+        +'<text class="gblt" x="'+(x+w/2).toFixed(1)+'" y="'+(y+rowH/2+3.5)+'" text-anchor="middle">'+esc(q.name)+'</text>';
+      x+=w+gap;
+    });
+  });
+  if(!tg)return '';
+  var left=Math.abs(tg.gl-cx)<=Math.abs(tg.gr-cx),gx=left?tg.gl:tg.gr,ex=left?tg.x+20:tg.x+tg.w-20,ty=tg.y+rowH/2,cor=bottom+16,sy0=bottom+32;
+  var d='M'+cx+' '+sy0+' L'+cx+' '+cor+' L'+gx.toFixed(1)+' '+cor+' L'+gx.toFixed(1)+' '+ty+' L'+ex.toFixed(1)+' '+ty;
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Floor plan with walking route">'
+    +'<defs><linearGradient id="gstg" x1="0" x2="1"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>'
+    +'<marker id="garr2" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F59E0B"/></marker></defs>'
+    +'<rect class="gstage" x="80" y="8" width="260" height="22" rx="11"/><text x="210" y="23" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="9.5" font-weight="800" letter-spacing="2.5" fill="#fff">STAGE</text>'
+    +blocks
+    +'<path class="gcase" d="'+d+'"/><path class="gpath" d="'+d+'" marker-end="url(#garr2)"/>'
+    +'<rect x="'+(cx-52)+'" y="'+sy0+'" width="104" height="22" rx="7" fill="#F59E0B"/>'
+    +'<text x="'+cx+'" y="'+(sy0+14.5)+'" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="8.5" font-weight="800" letter-spacing="1.2" fill="#fff">'+esc(T('entrance'))+'</text>'
+    +'<circle r="4.5" fill="#fff" stroke="#B45309" stroke-width="2"><animateMotion dur="4s" repeatCount="indefinite" path="'+d+'"/></circle></svg>';
+}
+function drawGuide(){
+  var old=$('guideSvg');if(old)old.remove();
+  var e=curEv(),z=e&&currentZone?zoneOf(e,currentZone):null,host=$('seatRows');
+  if(!z||!host||!guideOn(z))return;
+  var i=guideInfo(z,guide.keys[0]),el=i&&host.querySelector('[data-k="'+guide.keys[0]+'"]');
+  if(!el)return;
+  var hr=host.getBoundingClientRect(),er=el.getBoundingClientRect();if(!er.width)return;
+  var gx,a1=host.querySelector('[data-k="A1"]').getBoundingClientRect();
+  if(i.g===0)gx=a1.left-hr.left-3;
+  else{var ag=host.querySelector('[data-k="A'+(i.g*i.A)+'"]');if(!ag)return;gx=ag.getBoundingClientRect().right-hr.left+8}
+  var sx=er.left-hr.left+er.width/2,sy=er.top-hr.top+er.height/2,y0=-8;
+  var d='M'+gx+' '+y0+' L'+gx+' '+sy+' L'+sx+' '+sy;
+  host.insertAdjacentHTML('beforeend','<svg id="guideSvg" class="gsvg" aria-hidden="true">'
+    +'<defs><marker id="garr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F59E0B"/></marker></defs>'
+    +'<path class="gcase" d="'+d+'"/><path class="gpath" d="'+d+'" marker-end="url(#garr)"/>'
+    +'<circle cx="'+gx+'" cy="'+y0+'" r="5" fill="#F59E0B" stroke="#fff" stroke-width="2"/>'
+    +'<text class="gtxt" x="'+(gx+9)+'" y="'+(y0+3)+'">'+esc(T('secEntry'))+'</text>'
+    +'<circle r="4.5" fill="#fff" stroke="#B45309" stroke-width="2"><animateMotion dur="3.2s" repeatCount="indefinite" path="'+d+'"/></circle>'
+    +'<circle class="gpin" cx="'+sx+'" cy="'+sy+'" r="9"/></svg>');
+}
+function showGuide(t){
+  if(!t||t.status!=='active')return;
+  if(!ev(t.eventId)){toast(T('noEvent'));return}
+  if(currentEvent!==t.eventId){currentEvent=t.eventId;watchSeats()}
+  currentZone=t.zone;selected=[];guide={event:t.eventId,zone:t.zone,keys:t.keys};
+  renderAll();
+  if(location.hash!=='#booking')location.hash='#booking';
+  setTimeout(function(){var el=document.querySelector('#seatRows .seat.guide');
+    drawGuide();
+    var p=$('seatPanel');if(p)p.scrollIntoView({behavior:'smooth',block:'start'});
+    if(el)setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})},450)},350);
+}
+window.addEventListener('resize',function(){if(guide)drawGuide()});
+
 /* ============ PAGE ROUTER (tabs) ============ */
 var PAGES=['home','dashboard','booking','tickets','profile','plans'];
 function showPage(id){
@@ -1371,6 +1708,8 @@ Store.init().then(function(){
   if(s){ uid=s; watchMe(s); watchTicketsOnce(); }
   renderAll();
   showPage((location.hash||'#home').slice(1));
+  Store.onDoc('meta/announcement',renderAnn);
+  updatePhase();setInterval(updatePhase,1000);applyLang();
 });
 })();
 </script>
