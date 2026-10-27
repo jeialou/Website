@@ -200,6 +200,12 @@ h1.title span{background:linear-gradient(120deg,var(--blue-600),var(--purple));-
 .ev-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
 .ev{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s,border-color .25s;display:flex;flex-direction:column;gap:10px}
 .ev:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+@media (max-width:620px){
+  .ev-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;gap:12px;padding:4px 2px 14px;scroll-padding:0 2px}
+  .ev-grid::-webkit-scrollbar{display:none}
+  .ev-grid>.ev{flex:0 0 86%;min-width:0;scroll-snap-align:center}
+  .ev-grid>.empty{flex:0 0 100%}
+}
 .ev.on{border-color:var(--purple);box-shadow:0 0 0 2px color-mix(in srgb,var(--purple) 30%,transparent)}
 .ev h4{font-size:.98rem}
 .ev .meta{font-size:.76rem;color:var(--muted);font-weight:600}
@@ -573,7 +579,7 @@ var CHAPEL_ZONES=[
  {code:'BCC',name:'Upperbox Center',tier:'Upperbox',rows:20,cols:40,aisle:10,price:0},
  {code:'BCR',name:'Upperbox Right',tier:'Upperbox',rows:12,cols:25,aisle:10,price:0}
 ];
-var BUILTIN=[{id:'chapel-main',name:'Worship Service',venue:'MCGI Chapel',kind:'chapel',ownerId:null,ownerName:'MCGI Chapel',
+var BUILTIN=[{id:'chapel-main',name:'Thanksgiving',venue:'MCGI Chapel',kind:'chapel',ownerId:null,ownerName:'MCGI Chapel',
   when:'Every Saturday · Reservations open 12:00 NN · Open to everyone 3:00 PM',startsAt:null,grace:20,status:'active',zones:CHAPEL_ZONES,createdAt:0}];
 
 /* ============ VENUE TEMPLATES ============ */
@@ -639,11 +645,7 @@ var MOCK_EVENTS=[
  {id:'mock-orchestra',name:'Christmas Orchestra Gala',venue:'Holy Angel University Auditorium',vt:'auditorium',stage:'ORCHESTRA STAGE',ownerName:'Kapampangan Philharmonic',when:'Fri, Dec 18 · 6:30 PM',
   zones:[mz('ORC','Orchestra','Premium',8,26,1800,2,2500),mz('MZN','Mezzanine','Seating',8,26,1000),mz('GAL','Gallery','Seating',6,26,600)]}
 ];
-MOCK_EVENTS.forEach(function(m,i){
-  var hasPaid=m.zones.some(function(z){return z.price>0});
-  BUILTIN.push({id:m.id,name:m.name,venue:m.venue,kind:'community',ownerId:null,ownerName:m.ownerName,ownerPlan:'organizer',
-    when:m.when,startsAt:null,grace:20,status:'active',zones:m.zones,createdAt:i+1,mock:true,paid:hasPaid,venueType:m.vt,stage:m.stage});
-});
+/* sample events removed: only the Thanksgiving chapel event is listed */
 
 /* ============ STATE ============ */
 var me=null,uid=null,isOwnerViewer=false;
@@ -895,6 +897,7 @@ function renderEvents(){
       +'<div class="meta">by '+esc(e.ownerName||'TicketVerse')+'</div>'
       +'<div class="foot"><button class="btn btn-primary btn-sm" data-open="'+esc(e.id)+'">'+(e.id===currentEvent?'Viewing':'View event')+'</button>'
       +(ownsEvent(e)?'<button class="btn btn-ghost btn-sm" data-manage="'+esc(e.id)+'">Manage</button>':'')
+      +(ownsEvent(e)&&e.kind!=='chapel'?'<button class="btn btn-danger btn-sm" data-remove="'+esc(e.id)+'">Remove</button>':'')
       +'</div></div>';
   });
   $('evList').innerHTML=h||'<div class="empty" style="grid-column:1/-1">No events yet.</div>';
@@ -1499,6 +1502,22 @@ function openManage(id){
     };
   });
 }
+function removeEvent(id){
+  var e=ev(id); if(!e||e.kind==='chapel'||!ownsEvent(e))return;
+  openModal('<h3>Remove this seat plan?</h3><p class="sub">'+esc(e.name)+' will be deleted from the home page together with its seat map. Active tickets for it are cancelled. This cannot be undone.</p>'
+   +'<div class="modal-acts"><button class="btn btn-ghost" data-close>Cancel</button><button class="btn btn-danger" id="rmYes">Remove</button></div>');
+  $('rmYes').onclick=function(){
+    $('rmYes').disabled=true;$('rmYes').textContent='Removing…';
+    Store.getColl('tickets',['eventId','==',id]).then(function(list){
+      var tks=list.map(function(d){return d.data});
+      var chain=e.zones.reduce(function(ch,z){return ch.then(function(){return Store.del('events/'+id+'/seats/'+z.code)})},Promise.resolve());
+      return tks.filter(function(t){return t.status==='active'})
+        .reduce(function(ch,t){return ch.then(function(){return Store.merge('tickets/'+t.id,{status:'ended'})})},chain);
+    }).then(function(){return Store.del('events/'+id)})
+      .then(function(){if(currentEvent===id)currentEvent='chapel-main';closeModal();toast('Seat plan removed.');renderAll()})
+      .catch(function(){closeModal();toast('Something went wrong.')});
+  };
+}
 function confirmReset(e,tks,end){
   openModal('<h3>'+(end?'End event and reset seats?':'Reset all booked seats?')+'</h3>'
    +'<p class="sub">Every seat in '+esc(e.name)+' becomes free again'+(end?' and the event closes for new bookings':'')+'. Existing tickets are marked as '+(end?'"event ended"':'released')+'. This cannot be undone.</p>'
@@ -1553,6 +1572,7 @@ document.addEventListener('click',function(ev0){
   var op=t.closest('[data-open]');if(op){
     currentEvent=op.dataset.open;currentZone=null;selected=[];watchSeats();renderAll();
     setTimeout(function(){location.hash='#booking'},60);return}
+  var rmv=t.closest('[data-remove]');if(rmv){removeEvent(rmv.dataset.remove);return}
   var mg=t.closest('[data-manage]');if(mg){openManage(mg.dataset.manage);return}
   var pl=t.closest('[data-plan]');if(pl){closeModal();choosePlan(pl.dataset.plan);return}
   var qr=t.closest('[data-qr]');if(qr){var tk=null;myTickets.forEach(function(x){if(x.id===qr.dataset.qr)tk=x});if(tk)showTicket(tk,false);return}
