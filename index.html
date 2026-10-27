@@ -216,7 +216,8 @@ h1.title span{background:linear-gradient(120deg,var(--blue-600),var(--purple));-
 .tag-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 
 /* SEAT MAP */
-.stage{margin:0 auto 20px;max-width:640px;height:42px;border-radius:0 0 99px 99px;background:linear-gradient(135deg,var(--blue-600),var(--purple));color:#fff;display:grid;place-items:center;font-size:.72rem;font-weight:800;letter-spacing:.28em}
+.stage{margin:0 auto 20px;max-width:640px;min-height:42px;padding:8px 26px 10px;box-sizing:border-box;border-radius:0 0 28px 28px;background:linear-gradient(135deg,var(--blue-600),var(--purple));color:#fff;display:grid;place-items:center;text-align:center;line-height:1.4;overflow-wrap:anywhere;font-size:.72rem;font-weight:800;letter-spacing:.14em}
+@media (max-width:480px){.stage{font-size:.64rem;letter-spacing:.08em;padding:8px 18px 10px}}
 .tier-label{font-size:.66rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:18px 0 9px;text-align:center}
 .map-row{display:grid;grid-template-columns:.72fr 1.3fr .72fr;gap:10px}
 .map-row.single{grid-template-columns:1fr;max-width:520px;margin-inline:auto}
@@ -628,6 +629,16 @@ var SHAPES=[['chair','Chair (square)'],['round','Round seat / standing spot'],['
 /* ============ SAMPLE EVENTS (mock-ups) ============ */
 function mz(code,name,tier,rows,cols,price,premRows,premPrice,shape){return {code:code,name:name,tier:tier,rows:rows,cols:cols,aisle:Math.max(4,Math.floor(cols/3)),price:price,premRows:premRows||0,premPrice:premPrice||0,shape:shape||'chair'}}
 var MOCK_EVENTS=[
+ {id:'mock-pasalamat',name:'Special Pasalamat ng Buong Bayan',venue:'MCGI Chapel',vt:'auditorium',stage:'MAIN STAGE',ownerName:'MCGI Chapel',when:'Sat, Nov 28 · 9:00 AM',
+  zones:CHAPEL_ZONES.map(function(z){return Object.assign({},z)})},
+ {id:'mock-grand-fiesta',name:'Grand Fiesta ng Dios',venue:'MCGI Chapel',vt:'auditorium',stage:'MAIN STAGE',ownerName:'MCGI Chapel',when:'Sat, Dec 12 · 8:00 AM',
+  zones:CHAPEL_ZONES.map(function(z){return Object.assign({},z)})},
+ {id:'mock-opm-legends',name:'OPM Legends Live',venue:'Newport Performing Arts Theater, Pasay City',vt:'theater',stage:'STAGE',ownerName:'Himig Pinoy Productions',when:'Fri, Nov 20 · 8:00 PM',
+  zones:[mz('ORC','Orchestra','Premium',6,22,3000),mz('BAL','Balcony','Seating',8,22,1800),mz('UPB','Upper Balcony','Seating',8,22,1000)]},
+ {id:'mock-gospel-night',name:'Praise & Worship Live: Gospel Music Night',venue:'Music Hall, Mall of Asia Complex',vt:'theater',stage:'STAGE',ownerName:'Awit ng Pasasalamat Ministry',when:'Sat, Dec 5 · 6:00 PM',
+  zones:[mz('FRT','Front','Premium',5,20,800),mz('MID','Middle','Seating',10,24,500),mz('BCK','Back','Seating',8,24,300)]},
+ {id:'mock-basketball-finals',name:'Inter-Barangay Basketball Finals',venue:'Caloocan Sports Complex',vt:'auditorium',stage:'COURT',ownerName:'Caloocan Sports Council',when:'Sun, Nov 22 · 3:00 PM',
+  zones:[mz('CRT','Courtside','Premium',3,20,500),mz('BLC','Bleachers','Seating',14,30,100)]},
  {id:'mock-tech-summit',name:'Luzon Tech & Startup Summit 2026',venue:'Clark Convention Center, Pampanga',vt:'conference',stage:'MAIN STAGE',ownerName:'Pampanga Founders Hub',when:'Sat, Nov 14 · 8:00 AM – 5:00 PM',
   zones:[mz('VIP','VIP Front','Premium',4,20,2500),mz('GEN','General Admission','Seating',20,30,800,3,1200)]},
  {id:'mock-acoustic-night',name:'Acoustic Nights: Indie Live',venue:'The Garage Music Hall, Angeles City',vt:'theater',stage:'STAGE',ownerName:'Garage Live Productions',when:'Fri, Nov 6 · 7:30 PM',
@@ -642,10 +653,13 @@ var MOCK_EVENTS=[
   zones:[mz('FST','Festival Grounds','Seating',20,40,0,0,0,'round'),mz('TST','Tasting Hall (limited)','Premium',6,20,350)]},
  {id:'mock-charity-run',name:'Run for a Cause 5K Fun Run Kick-off',venue:'Marquee Mall Open Grounds',vt:'outdoor',stage:'START / FINISH LINE',ownerName:'Pampanga Runners Club',when:'Sun, Dec 13 · 5:00 AM',
   zones:[mz('RUN','Runner Check-in Area','Seating',10,30,250,0,0,'round')]},
- {id:'mock-orchestra',name:'Christmas Orchestra Gala',venue:'Holy Angel University Auditorium',vt:'auditorium',stage:'ORCHESTRA STAGE',ownerName:'Kapampangan Philharmonic',when:'Fri, Dec 18 · 6:30 PM',
-  zones:[mz('ORC','Orchestra','Premium',8,26,1800,2,2500),mz('MZN','Mezzanine','Seating',8,26,1000),mz('GAL','Gallery','Seating',6,26,600)]}
+
 ];
-/* sample events removed: only the Thanksgiving chapel event is listed */
+MOCK_EVENTS.forEach(function(m,i){
+  var hasPaid=m.zones.some(function(z){return z.price>0});
+  BUILTIN.push({id:m.id,name:m.name,venue:m.venue,kind:'community',ownerId:null,ownerName:m.ownerName,ownerPlan:'organizer',
+    when:m.when,startsAt:null,grace:20,status:'active',zones:m.zones,createdAt:i+1,mock:true,paid:hasPaid,venueType:m.vt,stage:m.stage});
+});
 
 /* ============ STATE ============ */
 var me=null,uid=null,isOwnerViewer=false;
@@ -1788,13 +1802,13 @@ var MSG={
   openSeatTxt:'Any free seat can be taken by anyone — no account needed.',foundTog:'seats together:',noTog:'No group of that size is free in this section. Try another.',csvDone:'Attendance exported.',
   noTicket:'No ticket with that number for this event.',noScan:'Camera scanning needs Chrome or Edge. Type the ticket number instead.',noCam:'Could not open the camera. Check permissions.',
   scanTitle:'Scan ticket',scanSub:'Point the camera at the ticket QR code.',cancel:'Cancel',notice:'Notice',annTitle:'Announcement',annSub:'Shown at the top of the home page for everyone.',
-  annMsg:'Message',annClear:'Remove',annPost:'Publish',annDone:'Announcement published.',guideTitle:'Seat guide',entrance:'MAIN ENTRANCE',secEntry:'SECTION ENTRY',planCap:'Floor plan: from the main entrance to {z}',aisleN:'aisle {g}',edgeL:'the left edge',dirL:'left',dirR:'right',noEvent:'That event is no longer available.',
+  annMsg:'Message',annClear:'Remove',annPost:'Publish',annDone:'Announcement published.',guideTitle:'Seat guide',entrance:'MAIN ENTRANCE',entranceN:'ENTRANCE',planCapN:'Floor plan: from the nearest entrance to {z}',secEntry:'SECTION ENTRY',planCap:'Floor plan: from the main entrance to {z}',aisleN:'aisle {g}',edgeL:'the left edge',dirL:'left',dirR:'right',noEvent:'That event is no longer available.',
   guideTxt:'Enter at the front of {z} and walk down {a}. At row {r}, turn {d} and count {n} seat(s) to {k}.'},
  tl:{evOpen:'Bukas para sa booking',evEnded:'Tapos na ang event',locked:'Bukas ang reserbasyon tuwing Sabado, 12:00 NN.',closed:'Sarado ang reserbasyon',opensIn:'Magbubukas ang reserbasyon sa',resOpen:'Bukas ang reserbasyon',everyoneIn:'Bukas sa lahat sa loob ng',openSeat:'Bukas na upuan',
   openSeatTxt:'Kahit sino ay maaaring kumuha ng bakanteng upuan — hindi kailangan ng account.',foundTog:'magkatabing upuan:',noTog:'Walang bakanteng grupo na ganoong laki sa seksyong ito. Subukan ang iba.',csvDone:'Na-export ang attendance.',
   noTicket:'Walang tiket na may ganoong numero sa event na ito.',noScan:'Kailangan ng Chrome o Edge para sa pag-scan. I-type na lang ang numero ng tiket.',noCam:'Hindi mabuksan ang camera. Tingnan ang permiso.',
   scanTitle:'I-scan ang tiket',scanSub:'Itutok ang camera sa QR code ng tiket.',cancel:'Kanselahin',notice:'Paunawa',annTitle:'Anunsyo',annSub:'Makikita sa itaas ng home page ng lahat.',
-  annMsg:'Mensahe',annClear:'Alisin',annPost:'I-publish',annDone:'Na-publish ang anunsyo.',guideTitle:'Gabay sa upuan',entrance:'PANGUNAHING PASUKAN',secEntry:'PASUKAN NG SEKSYON',planCap:'Mapa ng palapag: mula sa pangunahing pasukan hanggang {z}',aisleN:'pasilyo {g}',edgeL:'kaliwang gilid',dirL:'kaliwa',dirR:'kanan',noEvent:'Wala na ang event na iyon.',
+  annMsg:'Mensahe',annClear:'Alisin',annPost:'I-publish',annDone:'Na-publish ang anunsyo.',guideTitle:'Gabay sa upuan',entrance:'PANGUNAHING PASUKAN',entranceN:'PASUKAN',planCapN:'Mapa ng palapag: mula sa pinakamalapit na pasukan hanggang {z}',secEntry:'PASUKAN NG SEKSYON',planCap:'Mapa ng palapag: mula sa pangunahing pasukan hanggang {z}',aisleN:'pasilyo {g}',edgeL:'kaliwang gilid',dirL:'kaliwa',dirR:'kanan',noEvent:'Wala na ang event na iyon.',
   guideTxt:'Pumasok sa harap ng {z} at maglakad sa {a}. Sa hilera {r}, lumiko sa {d} at bilangin ang {n} upuan hanggang {k}.'}
 };
 function T(k){return (MSG[lang]&&MSG[lang][k])||MSG.en[k]||k}
@@ -1831,19 +1845,20 @@ function guideCardHTML(z){
     .replace('{r}',i.row).replace('{d}',i.right?T('dirR'):T('dirL')).replace('{n}',i.n).replace('{k}',i.row+i.c);
   return '<div class="guidecard"><span class="gsw"></span><div><b>'+esc(T('guideTitle'))+' · '+esc(guide.keys.join(', '))+'</b><p>'+esc(txt)+'</p></div>'
     +'<button class="btn btn-ghost btn-sm" id="hideGuide">Hide guide</button>'
-    +'<div class="gplan"><small>'+esc(T('planCap').replace('{z}',z.name))+'</small>'+floorPlan(curEv(),z)+'</div></div>';
+    +'<div class="gplan"><small>'+esc(T(curEv()&&curEv().kind==='chapel'?'planCapN':'planCap').replace('{z}',z.name))+'</small>'+floorPlan(curEv(),z)+'</div></div>';
 }
 function floorPlan(e,z){
   if(!e)return '';
   var W=420,mx=14,gap=10,rowH=44,rowGap=18,top=42,idx={},tiers=[],rows=[];
   e.zones.forEach(function(q){var t=q.tier||'Seating';if(idx[t]==null){idx[t]=tiers.length;tiers.push([])}tiers[idx[t]].push(q)});
   tiers.forEach(function(arr){for(var i=0;i<arr.length;i+=4)rows.push(arr.slice(i,i+4))});
-  var bottom=top+rows.length*rowH+(rows.length-1)*rowGap,H=bottom+62,cx=W/2,tg=null,blocks='';
+  var bottom=top+rows.length*rowH+(rows.length-1)*rowGap,H=bottom+62,cx=W/2,tg=null,blocks='',pos={};
   rows.forEach(function(arr,ri){
     var y=top+ri*(rowH+rowGap),usable=W-2*mx-gap*(arr.length-1),tc=0,x=mx;
     arr.forEach(function(q){tc+=q.cols||1});
     arr.forEach(function(q,j){
       var w=usable*(q.cols||1)/tc,on=q.code===z.code;
+      pos[q.code]={x:x,y:y,w:w};
       if(on)tg={x:x,y:y,w:w,gl:x-(j?gap/2:mx/2),gr:x+w+(j<arr.length-1?gap/2:mx/2)};
       blocks+='<rect class="gblk'+(on?' on':'')+'" x="'+x.toFixed(1)+'" y="'+y+'" width="'+w.toFixed(1)+'" height="'+rowH+'" rx="8"/>'
         +'<text class="gblt" x="'+(x+w/2).toFixed(1)+'" y="'+(y+rowH/2+3.5)+'" text-anchor="middle">'+esc(q.name)+'</text>';
@@ -1851,6 +1866,20 @@ function floorPlan(e,z){
     });
   });
   if(!tg)return '';
+  if(pos.MZL&&pos.MZC&&pos.MZR){
+    var g1=pos.MZL.x+pos.MZL.w+gap/2,g2=pos.MZC.x+pos.MZC.w+gap/2,eyc=pos.MZC.y+rowH/2,tcx=tg.x+tg.w/2;
+    var gx2=Math.abs(g1-tcx)<=Math.abs(g2-tcx)?g1:g2,ty2=tg.y+rowH/2,ex2=tcx>gx2?tg.x+20:tg.x+tg.w-20;
+    var d2='M'+gx2.toFixed(1)+' '+eyc+' L'+gx2.toFixed(1)+' '+ty2+' L'+ex2.toFixed(1)+' '+ty2;
+    var door=function(gx3){return '<rect x="'+(gx3-5).toFixed(1)+'" y="'+(eyc-15)+'" width="10" height="30" rx="4" fill="#F59E0B"/>'
+      +'<text x="'+gx3.toFixed(1)+'" y="'+(pos.MZC.y-5)+'" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="7.5" font-weight="800" letter-spacing=".8" fill="#B45309">'+esc(T('entranceN'))+'</text>'};
+    return '<svg viewBox="0 0 '+W+' '+(bottom+12)+'" role="img" aria-label="Floor plan with walking route">'
+      +'<defs><linearGradient id="gstg" x1="0" x2="1"><stop offset="0" stop-color="#2563EB"/><stop offset="1" stop-color="#7C3AED"/></linearGradient>'
+      +'<marker id="garr2" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.6" markerHeight="3.6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F59E0B"/></marker></defs>'
+      +'<rect class="gstage" x="80" y="8" width="260" height="22" rx="11"/><text x="210" y="23" text-anchor="middle" font-family="Montserrat,sans-serif" font-size="9.5" font-weight="800" letter-spacing="2.5" fill="#fff">STAGE</text>'
+      +blocks+'<path class="gcase" d="'+d2+'"/><path class="gpath" d="'+d2+'" marker-end="url(#garr2)"/>'
+      +door(g1)+door(g2)
+      +'<circle r="4.5" fill="#fff" stroke="#B45309" stroke-width="2"><animateMotion dur="3s" repeatCount="indefinite" path="'+d2+'"/></circle></svg>';
+  }
   var left=Math.abs(tg.gl-cx)<=Math.abs(tg.gr-cx),gx=left?tg.gl:tg.gr,ex=left?tg.x+20:tg.x+tg.w-20,ty=tg.y+rowH/2,cor=bottom+16,sy0=bottom+32;
   var d='M'+cx+' '+sy0+' L'+cx+' '+cor+' L'+gx.toFixed(1)+' '+cor+' L'+gx.toFixed(1)+' '+ty+' L'+ex.toFixed(1)+' '+ty;
   return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Floor plan with walking route">'
